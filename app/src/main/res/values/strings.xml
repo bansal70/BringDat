@@ -1,0 +1,47 @@
+<resources>
+    <string name="app_name">BringDat</string>
+    <string name="title_activity_login">Login</string>
+
+    <!-- Strings related to login -->
+    <string name="prompt_email">Email/Username</string>
+    <string name="prompt_password">Password</string>
+    <string name="action_sign_in">Login</string>
+    <string name="action_sign_in_short">Sign in</string>
+    <string name="error_invalid_email">This email address is invalid</string>
+    <string name="error_invalid_password">This password is too short</string>
+    <string name="error_incorrect_password">This password is incorrect</string>
+    <string name="error_field_required">This field is required</string>
+    <string name="hint_email_username">Enter email or username</string>
+    <string name="hint_password">Enter Password</string>
+    <string name="error_email_required">Please enter the email address</string>
+    <string name="error_password_required">Please enter the password</string>
+    <string name="success_login">You have been logged in successfully</string>
+    <string name="error_server">Something went wrong! Please try again.</string>
+    <string name="eror_invalid_credentials">Invalid login credentials</string>
+    <string name="title_activity_orders">Orders</string>
+    <string name="error_no_orders">Sorry, no order found</string>
+    <string name="error_no_more_orders">No more orders</string>
+    <string name="prompt_scan_devices">Scan devices</string>
+    <string name="prompt_other_devices">Other Available Devices</string>
+    <string name="prompt_paired_devices">Paired Devices</string>
+    <string name="label_select_device">Select your device to continue</string>
+    <string name="prompt_no_devices">No devices found</string>
+    <string name="prompt_no_device_paired">No devices have been paired</string>
+    <string name="prompt_scanning_devices">Scanning for devices</string>
+    <string name="prompt_print">Print</string>
+    <string name="prompt_connect_bt_printer">Connect Bluetooth Printer</string>
+    <string name="error_connection_failed">Unable to connect device</string>
+    <string name="success_connection">Connection successful</string>
+    <string name="error_connection_lost">Device connection was lost</string>
+    <string name="error_bluetooth_unavailable">Bluetooth is not available</string>
+    <string name="prompt_reprint">Re-Print</string>
+    <string name="prompt_apt_building">Apt/Suite/Building #</string>
+    <string name="prompt_bluetooth_enabled">Bluetooth has been enabled</string>
+    <string name="prompt_logout">Logout</string>
+    <string name="alert_logout">Are you sure want to logout your account?</string>
+    <string name="prompt_logged_out">You have been logged out successfully</string>
+    <string name="error_internet_connection">No internet connection</string>
+    <string name="prompt_total">Total:</string>
+    <string name="prompt_connect_printer">Please connect a Bluetooth printer</string>
+    <string name="error_bt_canceled">Please turn on bluetooth</string>
+</resources>

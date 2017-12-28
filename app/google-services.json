@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "1009059564299",
+    "firebase_url": "https://bringdat-28a1b.firebaseio.com",
+    "project_id": "bringdat-28a1b",
+    "storage_bucket": "bringdat-28a1b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1009059564299:android:0153acddeccb067b",
+        "android_client_info": {
+          "package_name": "com.bring.dat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1009059564299-fu1av7djuo08as9qa79i85q30pdcqg8o.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyACsnDxyA5fB7V8RnmeNCi2SzAeHpjr1Jc"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
