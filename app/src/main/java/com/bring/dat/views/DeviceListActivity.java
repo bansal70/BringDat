@@ -24,19 +24,23 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bring.dat.R;
-import com.zj.btsdk.BluetoothService;
+import com.bring.dat.views.services.BluetoothService;
 
 import java.util.Set;
+
+import butterknife.BindView;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+import timber.log.Timber;
 
 /**
  * This Activity appears as a dialog. It lists any paired devices and
@@ -45,12 +49,25 @@ import java.util.Set;
  * Activity in the result Intent.
  */
 public class DeviceListActivity extends AppBaseActivity {
-    static final String TAG = "DeviceListActivity";
+
+    @BindView(R.id.mProgressBar)
+    ProgressBar mProgressBar;
+
+    @BindView(R.id.new_devices)
+    ListView newDevicesListView;
+
+    @BindView(R.id.paired_devices)
+    ListView pairedListView;
+
+    @BindView(R.id.button_scan)
+    Button scanButton;
+
     // Return Intent extra
     public static String EXTRA_DEVICE_ADDRESS = "device_address";
 
     // Member fields
     BluetoothService mService = null;
+
     private ArrayAdapter<String> mPairedDevicesArrayAdapter;
     private ArrayAdapter<String> mNewDevicesArrayAdapter;
     // The BroadcastReceiver that listens for discovered devices and
@@ -74,11 +91,12 @@ public class DeviceListActivity extends AppBaseActivity {
                 if (mNewDevicesArrayAdapter.getCount() == 0) {
                     String noDevices = getResources().getText(R.string.prompt_no_devices).toString();
                     mNewDevicesArrayAdapter.add(noDevices);
+                    mProgressBar.setVisibility(View.GONE);
                 }
             }
         }
     };
-    //����б�������豸
+
     // The on-click listener for all devices in the ListViews
     private OnItemClickListener mDeviceClickListener = (av, v, arg2, arg3) -> {
         // Cancel discovery because it's costly and we're about to connect
@@ -91,7 +109,7 @@ public class DeviceListActivity extends AppBaseActivity {
         // Create the result Intent and include the MAC address
         Intent intent = new Intent();
         intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
-        Log.d(TAG, address);
+        Timber.d(address);
 
         // Set result and finish this Activity
         setResult(Activity.RESULT_OK, intent);
@@ -103,31 +121,21 @@ public class DeviceListActivity extends AppBaseActivity {
         super.onCreate(savedInstanceState);
         // Setup the window
         setContentView(R.layout.device_list_dialog);
+        ButterKnife.bind(this);
 
         // Set result CANCELED incase the user backs out
         setResult(Activity.RESULT_CANCELED);
-
-        // Initialize the button to perform device discovery
-        Button scanButton = (Button) findViewById(R.id.button_scan);
-        scanButton.setOnClickListener(new OnClickListener() {
-            public void onClick(View v) {
-                doDiscovery();
-                v.setVisibility(View.GONE);
-            }
-        });
 
         // Initialize array adapters. One for already paired devices and
         // one for newly discovered devices
         mPairedDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.device_name);
         mNewDevicesArrayAdapter = new ArrayAdapter<>(this, R.layout.device_name);
 
-        // Find and set up the ListView for paired devices
-        ListView pairedListView = (ListView) findViewById(R.id.paired_devices);
+        // set up the ListView for paired devices
         pairedListView.setAdapter(mPairedDevicesArrayAdapter);
         pairedListView.setOnItemClickListener(mDeviceClickListener);
 
-        // Find and set up the ListView for newly discovered devices
-        ListView newDevicesListView = (ListView) findViewById(R.id.new_devices);
+        // set up the ListView for newly discovered devices
         newDevicesListView.setAdapter(mNewDevicesArrayAdapter);
         newDevicesListView.setOnItemClickListener(mDeviceClickListener);
 
@@ -156,6 +164,12 @@ public class DeviceListActivity extends AppBaseActivity {
         }
     }
 
+    @OnClick(R.id.button_scan)
+    public void scanBT() {
+        doDiscovery();
+        scanButton.setVisibility(View.GONE);
+    }
+
     @Override
     protected void onDestroy() {
         super.onDestroy();
@@ -173,7 +187,9 @@ public class DeviceListActivity extends AppBaseActivity {
         setTitle(getString(R.string.prompt_scanning_devices));
 
         // Turn on sub-title for new devices
-        findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
+        //findViewById(R.id.title_new_devices).setVisibility(View.VISIBLE);
+        findViewById(R.id.new_devices_layout).setVisibility(View.VISIBLE);
+        mProgressBar.setVisibility(View.VISIBLE);
 
         // If we're already discovering, stop it
         if (mService.isDiscovering()) {

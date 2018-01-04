@@ -23,7 +23,7 @@ public class ProgressBarHandler {
 
         RelativeLayout rl = new RelativeLayout(context);
 
-        rl.setGravity(Gravity.CENTER);
+        rl.setGravity(Gravity.BOTTOM);
         rl.addView(mProgressBar);
 
         layout.addView(rl, params);

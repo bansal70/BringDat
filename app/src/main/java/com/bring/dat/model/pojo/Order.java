@@ -159,4 +159,6 @@ public class Order {
     public String merchantAddress;
     @SerializedName("merchant_phone")
     public String merchantPhone;
+    @SerializedName("order_print_status")
+    public String order_print_status;
 }

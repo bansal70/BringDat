@@ -5,10 +5,13 @@ import android.content.Context;
 import com.bring.dat.BuildConfig;
 import com.bring.dat.R;
 
+import org.acra.ACRA;
+import org.acra.annotation.ReportsCrashes;
+
 import timber.log.Timber;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
-//@ReportsCrashes(formUri = "", mailTo = "rishav.orem@gmail.com")
+@ReportsCrashes(formUri = "", mailTo = "rishav.orem@gmail.com")
 public final class Application extends android.app.Application {
 
     public static String Font_Text = "Roboto-Regular.ttf";
@@ -16,7 +19,7 @@ public final class Application extends android.app.Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        //ACRA.init(this);
+        ACRA.init(this);
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }

@@ -4,14 +4,19 @@ package com.bring.dat.model;
  * Created by rishav on 12/27/2017.
  */
 
-import android.content.Context;
-import android.os.Handler;
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.net.Uri;
+import android.support.v7.app.AlertDialog;
 
 import com.bring.dat.R;
 import com.bring.dat.model.pojo.Cart;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
-import com.zj.btsdk.BluetoothService;
+import com.bring.dat.views.LoginActivity;
+import com.bring.dat.views.services.BTService;
+import com.bring.dat.views.services.BluetoothService;
 
 import java.util.List;
 
@@ -20,41 +25,35 @@ import retrofit2.Response;
 import timber.log.Timber;
 
 public class AppUtils {
+    private static BluetoothService mService;
+
+    public static void logoutAlert(final Activity mActivity) {
+        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(mActivity);
+        alertBuilder.setMessage(R.string.alert_logout);
+
+        alertBuilder
+                .setPositiveButton(android.R.string.yes, (dialogInterface, i) -> {
+                    dialogInterface.dismiss();
+
+                    BDPreferences.clearPref(mActivity);
+                    mActivity.startActivity(new Intent(mActivity, LoginActivity.class));
+                    mActivity.finish();
+                    Intent intent = new Intent(mActivity, BTService.class);
+                    mActivity.stopService(intent);
+
+                    Utils.showToast(mActivity, mActivity.getString(R.string.prompt_logged_out));
+                })
+                .setNegativeButton(android.R.string.no, (dialogInterface, i) -> dialogInterface.dismiss());
+
+        AlertDialog alertDialog = alertBuilder.create();
+        alertDialog.show();
+    }
 
     public static void serverError(Throwable throwable) {
         if (throwable instanceof HttpException) {
             Response<?> response = ((HttpException) throwable).response();
             Timber.e(response.message());
         }
-    }
-
-    public static Handler btHandler(Context mContext) {
-        return new Handler(msg -> {
-            switch (msg.what) {
-                case BluetoothService.MESSAGE_STATE_CHANGE:
-                    switch (msg.arg1) {
-                        case BluetoothService.STATE_CONNECTED:
-                            Utils.showToast(mContext, mContext.getString(R.string.success_connection));
-                            break;
-                        case BluetoothService.STATE_CONNECTING:
-                            Timber.e("Bluetooth is connecting");
-                            break;
-                        case BluetoothService.STATE_LISTEN:
-                        case BluetoothService.STATE_NONE:
-                            Timber.e("Bluetooth state listen or none");
-                            break;
-                    }
-                    break;
-                case BluetoothService.MESSAGE_CONNECTION_LOST:
-                    Utils.showToast(mContext, mContext.getString(R.string.error_connection_lost));
-                    break;
-                case BluetoothService.MESSAGE_UNABLE_CONNECT:
-                    Utils.showToast(mContext, mContext.getString(R.string.error_connection_failed));
-                    break;
-            }
-
-            return false;
-        });
     }
 
     public static String headerOrderReceipt(OrderDetails mOrderDetails) {
@@ -70,7 +69,80 @@ public class AppUtils {
         return header;
     }
 
-    public static String makeOrderReceipt(OrderDetails mOrderDetails) {
+    public void printText(String txt, char type){
+        byte[] format = { 27, 33, 0 };
+        byte[] arrayOfByte1 = { 27, 33, 0 };
+
+        if (type == 'b') {
+            format[2] = ((byte) (0x8 | arrayOfByte1[2])); //BOLD
+        }
+        if (type == 'h') {
+            format[2] = ((byte) (0x10 | arrayOfByte1[2])); //HEIGHT
+        }
+        if (type == 'w') {
+            format[2] = ((byte) (0x20 | arrayOfByte1[2])); //WIDTH
+        }
+        if (type == 'u') {
+            format[2] = ((byte) (0x80 | arrayOfByte1[2])); //UNDERLINE
+        }
+        if (type == 's') {
+            format[2] = ((byte) (0x1 | arrayOfByte1[2])); //SMALL
+        }
+
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    public void printMultiAlign(byte[] align, String msg){
+        try {
+            mService.write(align);
+            StringBuilder space = new StringBuilder("   ");
+            int l = msg.length();
+            if(l < 31){
+                for(int x = 31-l; x >= 0; x--) {
+                    space.append(" ");
+                }
+            }
+            msg = msg.replace(" : ", space.toString());
+            mService.write( msg.getBytes());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void printLeft(String txt) {
+        mService = BTService.mService;
+        byte[] format = new byte[]{0x1B, 'a', 0x00};
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    private static void printCenter(String txt) {
+        mService = BTService.mService;
+        byte[] format = new byte[]{0x1B, 'a', 0x01};
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    private static void printRight(String txt) {
+        mService = BTService.mService;
+        byte[] format = new byte[]{0x1B, 'a', 0x02};
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    private static void printCenterBold(String txt) {
+        byte[] arrayOfByte1 = { 27, 33, 0 };
+        mService = BTService.mService;
+        byte[] format = new byte[]{0x1B, 'a', 0x01};
+        format[2] = ((byte) (0x8 | arrayOfByte1[2]));
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    public static void printOrderReceipt(OrderDetails mOrderDetails) {
+
+        mService = BTService.mService;
         String msg = "";
         String DIVIDER = "--------------------------------";
         String DIVIDER_DOUBLE = "================================";
@@ -82,37 +154,178 @@ public class AppUtils {
         Order mOrder = data.order.get(0);
         List<Cart> mCartList = data.cart;
 
-        msg += DIVIDER + BREAK;
-        msg += "DELIVERY" + BREAK;
-        msg += DIVIDER + BREAK;
-        msg += mOrder.ordergenerateid + SPACE5 + mOrder.deliverydate + " " + mOrder.orderdate + BREAK;
-        msg += mOrder.orderdeliverydate + BREAK;
-        msg += DIVIDER_DOUBLE + BREAK;
-        msg += mOrder.customername + " " + mOrder.customerlastname + BREAK;
-        msg += String.format("%s, %s, %s", mOrder.cityName, mOrder.deliverystate, mOrder.deliveryzip) + "," + BREAK + BREAK;
-        msg += mOrder.customercellphone + BREAK + BREAK;
-        msg += DIVIDER_DOUBLE + BREAK;
-        msg += "Qty" + SPACE4 + "Item" + SPACE5 + SPACE5 + SPACE5 + "Price" + BREAK;
-        StringBuilder sb = new StringBuilder();
+        msg = mOrder.merchantName + BREAK;
+        printCenterBold(msg);
+        msg = mOrder.merchantAddress + BREAK;
+        printCenterBold(msg);
+        msg = mOrder.merchantPhone + BREAK;
+        printCenterBold(msg);
+
+        msg = DIVIDER;
+        printCenter(msg);
+
+        msg = "DELIVERY" + DIVIDER ;
+        printCenter(msg);
+
+        msg = mOrder.ordergenerateid + SPACE5 + mOrder.deliverydate + " " + mOrder.orderdate ;
+        printCenter(msg);
+
+        msg = mOrder.orderdeliverydate + DIVIDER_DOUBLE;
+        printCenter(msg);
+
+        msg = mOrder.customername + " " + mOrder.customerlastname;
+        printCenter(msg);
+
+        msg = String.format("%s, %s, %s", mOrder.cityName, mOrder.deliverystate, mOrder.deliveryzip) + "," + BREAK;
+        printCenter(msg);
+
+        msg = mOrder.customercellphone + BREAK + DIVIDER_DOUBLE;
+        printCenter(msg);
+
+        msg = "Qty" + SPACE4 + "Item";
+        printLeft(msg);
+
+        msg = "Price";
+        printRight(msg);
+
         for (int i = 0; i < mCartList.size(); i++) {
             Cart mCart = mCartList.get(i);
-            sb.append(mCart.qty).append(SPACE4).append(mCart.item).append(SPACE5).append(SPACE5).append(Constants.CURRENCY).append(mCart.price).append(BREAK);
-            //msg += mCart.qty + SPACE4 + mCart.item + SPACE5 + SPACE5 + SPACE5 + Constants.CURRENCY + mCart.price + BREAK;
+            msg = mCart.qty + "   " + mCart.item;
+            printLeft(msg);
+
+            msg = Constants.CURRENCY + mCart.price;
+            printRight(msg);
         }
-        msg += sb.toString();
-        msg += BREAK + BREAK + BREAK;
-        msg += "Subtotal:" + SPACE5 + Constants.CURRENCY + mOrder.ordersubtotal + BREAK;
-        msg += "Tax(" + mOrder.taxvalue + "%):" + SPACE5 + Constants.CURRENCY + mOrder.taxamount + BREAK;
-        msg += "Delivery Charge:" + SPACE5 + Constants.CURRENCY + mOrder.deliveryamount + BREAK;
-        msg += "Convenience Fee:" + SPACE5 + Constants.CURRENCY + mOrder.convenienceFee + BREAK;
 
-        if (!mOrder.siteDiscountAmount.isEmpty() || !mOrder.siteDiscountAmount.equals("0"))
-            msg += "bringDat Discount Yea! (" + mOrder.siteDiscountPercent + "%)" + ":" + SPACE5 + mOrder.siteDiscountAmount + BREAK;
+        msg = BREAK;
+        msg += "Subtotal:";
+        printLeft(msg);
 
-        msg += "Tip:" + SPACE5 + Constants.CURRENCY + mOrder.tipamount + BREAK;
-        msg += "Total:" + SPACE5 + Constants.CURRENCY + mOrder.ordertotalprice + BREAK + BREAK;
-        msg += SPACE5 + SPACE5 + SPACE5 + mOrder.paymentType + BREAK + BREAK + BREAK + BREAK + BREAK + DIVIDER;
+        msg = Constants.CURRENCY + mOrder.ordersubtotal ;
+        printRight(msg);
 
-        return msg;
+        msg = "Tax(" + mOrder.taxvalue + "%):";
+        printLeft(msg);
+
+        msg = Constants.CURRENCY + mOrder.taxamount;
+        printRight(msg);
+
+        msg = "Delivery Charge:";
+        printLeft(msg);
+
+        msg = Constants.CURRENCY + mOrder.deliveryamount;
+        printRight(msg);
+
+        msg = "Convenience Fee:";
+        printLeft(msg);
+
+        msg = Constants.CURRENCY + mOrder.convenienceFee;
+        printRight(msg);
+
+
+        if (!mOrder.siteDiscountAmount.isEmpty() || !mOrder.siteDiscountAmount.equals("0")) {
+            msg = "Discount(" + mOrder.siteDiscountPercent + "% :)";
+            printLeft(msg);
+
+            msg = Constants.CURRENCY + mOrder.siteDiscountAmount;
+            printRight(msg);
+        }
+
+        msg = "Tip:";
+        printLeft(msg);
+
+        msg = Constants.CURRENCY + mOrder.tipamount;
+        printRight(msg);
+
+        msg = "Total:";
+        printLeft(msg);
+
+        msg = Constants.CURRENCY + mOrder.ordertotalprice;
+        printRight(msg);
+
+        msg = mOrder.paymentType + BREAK + DIVIDER;
+        printCenter(msg);
     }
+
+    public void printOrderReceipt(Activity mContext, OrderDetails mOrderDetails) {
+        String DIVIDER = "<LINE";
+        String DIVIDER_DOUBLE = "<DLINE>";
+        String BREAK = "<BR>";
+        String SPACE5 = "     ";
+        String SPACE4 = "    ";
+        String CENTER = "<CENTER>";
+        String LEFT = "<LEFT>";
+        String RIGHT = "<RIGHT>";
+        String BOLD = "<BOLD>";
+        String NORMAL = "<NORMAL>";
+        String CUT = "<CUT>";
+
+        OrderDetails.Data data = mOrderDetails.data;
+        Order mOrder = data.order.get(0);
+        List<Cart> mCartList = data.cart;
+
+        StringBuilder command;
+        command = new StringBuilder(CENTER + BOLD + mOrder.merchantName + BREAK);
+        command.append(CENTER).append(BOLD).append(mOrder.merchantAddress).append(BREAK);
+        command.append(CENTER).append(BOLD).append(mOrder.merchantPhone).append(BREAK);
+
+        command.append(NORMAL).append(DIVIDER).append(BREAK).append(CENTER).append("DELIVERY").append(BREAK).append(DIVIDER).append(BREAK);
+        command.append(CENTER).append(mOrder.ordergenerateid).append(SPACE5).append(mOrder.deliverydate).append(" ").append(mOrder.orderdate).append(BREAK);
+        command.append(CENTER).append(mOrder.orderdeliverydate).append(DIVIDER_DOUBLE).append(BREAK);
+        command.append(CENTER).append(mOrder.customername).append(" ").append(mOrder.customerlastname).append(BREAK);
+        command.append(CENTER).append(String.format("%s, %s, %s", mOrder.cityName, mOrder.deliverystate, mOrder.deliveryzip)).append(",").append(BREAK);
+        command.append(CENTER).append(mOrder.customercellphone).append(BREAK).append(DIVIDER_DOUBLE).append(BREAK);
+        command.append(LEFT).append("Qty").append(SPACE4).append("Item").append(RIGHT).append("Price").append(BREAK);
+
+        for (int i = 0; i < mCartList.size(); i++) {
+            Cart mCart = mCartList.get(i);
+            command.append(LEFT).append(mCart.qty).append("   ").append(mCart.item);
+            command.append(RIGHT).append(Constants.CURRENCY).append(mCart.price).append(BREAK);
+        }
+
+        command.append(LEFT).append("Subtotal:");
+
+        command.append(RIGHT).append(Constants.CURRENCY).append(mOrder.ordersubtotal).append(BREAK);
+
+        command.append(LEFT).append("Tax(").append(mOrder.taxvalue).append("%):");
+        command.append(RIGHT).append(Constants.CURRENCY).append(mOrder.taxamount).append(BREAK);
+
+        command.append(LEFT).append("Delivery Charge:");
+
+        command.append(RIGHT).append(Constants.CURRENCY).append(mOrder.deliveryamount).append(BREAK);
+
+        command.append(LEFT).append("Convenience Fee:");
+
+        command.append(RIGHT).append(Constants.CURRENCY).append(mOrder.convenienceFee).append(BREAK);
+
+
+        if (!mOrder.siteDiscountAmount.isEmpty() || !mOrder.siteDiscountAmount.equals("0")) {
+            command.append(LEFT).append("bringDat Discount Yea! (").append(mOrder.siteDiscountPercent).append("%:)");
+            command.append(RIGHT).append(Constants.CURRENCY).append(mOrder.siteDiscountAmount).append(BREAK);
+        }
+
+        command.append(LEFT).append("Tip:");
+        command.append(RIGHT).append(Constants.CURRENCY).append(mOrder.tipamount).append(BREAK);
+
+        command.append(LEFT).append("Total:");
+
+        command.append(RIGHT).append(Constants.CURRENCY).append(mOrder.ordertotalprice).append(BREAK);
+        command.append(mOrder.paymentType).append(BREAK).append(DIVIDER).append(BREAK).append(CUT);
+
+        printReceipt(mContext, command.toString());
+    }
+
+    private void printReceipt(Activity mActivity, String textToPrint) {
+        try {
+            Intent intent = new Intent("pe.diegoveloper.printing");
+            intent.setType("text/plain");
+            intent.putExtra(android.content.Intent.EXTRA_TEXT, textToPrint);
+            mActivity.startActivity(intent);
+        } catch (ActivityNotFoundException ex) {
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
+            mActivity.startActivity(intent);
+        }
+    }
+
+
 }

@@ -34,4 +34,13 @@ public class Operations {
 
         return hashMap;
     }
+
+    public static HashMap<String, String> receiptPrintParams(String orderId, String token) {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("orderId", orderId);
+        hashMap.put("status", "1");
+        hashMap.put("token", token);
+
+        return hashMap;
+    }
 }

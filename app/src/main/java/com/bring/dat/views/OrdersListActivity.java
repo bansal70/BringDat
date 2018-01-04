@@ -1,15 +1,20 @@
 package com.bring.dat.views;
 
+import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bring.dat.R;
+import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Operations;
@@ -18,6 +23,7 @@ import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrdersResponse;
 import com.bring.dat.views.adapters.OrdersListAdapter;
+import com.bring.dat.views.services.BTService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +48,9 @@ public class OrdersListActivity extends AppBaseActivity {
     @BindView(R.id.listOrders)
     RecyclerView mListOrders;
 
+    @BindView(R.id.progressBar)
+    ProgressBar mProgressBar;
+
     private List<Order> mOrdersList;
     private OrdersListAdapter mOrdersListAdapter;
     private int page = 0;
@@ -50,6 +59,8 @@ public class OrdersListActivity extends AppBaseActivity {
     private CompositeDisposable compositeDisposable;
     public boolean requestOnWay = false;
     String token, restId;
+
+    AlertDialog alert;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,8 +73,13 @@ public class OrdersListActivity extends AppBaseActivity {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         tvTitle.setText(getString(R.string.title_activity_orders));
 
+        if (!isServiceRunning(BTService.class)) {
+            Intent btIntent = new Intent(mContext, BTService.class);
+            startService(btIntent);
+        }
+
         initViews();
-        //checkBT();
+        locationPermission();
     }
 
     private void initViews() {
@@ -84,6 +100,9 @@ public class OrdersListActivity extends AppBaseActivity {
                 if (!requestOnWay) {
                     if (isInternetActive()) {
                         pagination.onNext(page);
+                        mProgressBar.setVisibility(View.VISIBLE);
+                    } else {
+                        connectionAlert(false);
                     }
                 }
             }
@@ -102,15 +121,40 @@ public class OrdersListActivity extends AppBaseActivity {
         } else {
             showToast(ordersResponse.msg);
         }
-
         requestOnWay = false;
+
+        mProgressBar.setVisibility(View.GONE);
+
         dismissDialog();
+    }
+
+    private void connectionAlert(boolean isFirstTime) {
+        alert = Utils.createAlert(this, getString(R.string.error_connection_down), getString(R.string.error_internet_disconnected));
+
+        alert.setButton(Dialog.BUTTON_POSITIVE, "Retry", (dialogInterface, i) -> {
+            if (isFirstTime) {
+                fetchData();
+            }
+            else {
+                if (!isInternetActive()) {
+                    connectionAlert(false);
+                    return;
+                }
+                pagination.onNext(page);
+                mProgressBar.setVisibility(View.VISIBLE);
+            }
+        });
+        alert.show();
     }
 
     private void fetchData() {
         if (!isInternetActive()) {
+            connectionAlert(true);
             return;
         }
+
+//        alert.dismiss();
+
         showDialog();
 
         Disposable disposable = pagination.onBackpressureDrop()
@@ -144,20 +188,25 @@ public class OrdersListActivity extends AppBaseActivity {
     public boolean onOptionsItemSelected(MenuItem mItem) {
         switch (mItem.getItemId()) {
             case R.id.logout:
-                Utils.logoutAlert(this);
+                AppUtils.logoutAlert(this);
+                break;
+
+            case R.id.menuBT:
+                Intent serverIntent = new Intent(mContext, DeviceListActivity.class);
+                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
                 break;
         }
         return super.onOptionsItemSelected(mItem);
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
 
-        if (mService != null && !mService.isBTopen()) {
-            enableBluetooth();
-        } else {
-            connectBT();
+        boolean order = intent.getBooleanExtra("order", false);
+        if (order) {
+            page = 0;
+            fetchData();
         }
     }
 

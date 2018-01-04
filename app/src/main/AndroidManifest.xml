@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
     <uses-permission android:name="android.permission.BLUETOOTH"/>
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
     <application
         android:name=".model.Application"
@@ -32,12 +33,21 @@
             </intent-filter>
         </service>
 
+        <service android:name=".views.services.BTService" />
+
         <activity android:name=".views.OrdersListActivity" />
         <activity android:name=".views.PrintActivity"/>
         <activity
             android:name=".views.DeviceListActivity"
             android:label="@string/label_select_device"
             android:theme="@style/Theme.AppCompat.Light.Dialog.Alert"/>
+
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@mipmap/ic_bring_logo_round" />
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_color"
+            android:resource="@color/colorAccent" />
     </application>
 
 </manifest>

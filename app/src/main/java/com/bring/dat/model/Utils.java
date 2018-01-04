@@ -40,6 +40,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.StyleSpan;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
@@ -54,6 +55,7 @@ import android.widget.Toast;
 
 import com.bring.dat.R;
 import com.bring.dat.views.LoginActivity;
+import com.bring.dat.views.services.BTService;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -296,24 +298,14 @@ public class Utils {
         }
     }
 
-    public static void logoutAlert(final Activity context) {
-        AlertDialog.Builder alertBuilder = new AlertDialog.Builder(context);
-        alertBuilder.setMessage(R.string.alert_logout);
+    public static AlertDialog createAlert(Activity mActivity, String title, String message) {
+        AlertDialog alert = new AlertDialog.Builder(mActivity).create();
 
-        alertBuilder
-                .setPositiveButton(android.R.string.yes, (dialogInterface, i) -> {
-                    dialogInterface.dismiss();
+        alert.setTitle(title);
+        alert.setMessage(message);
+        alert.setCancelable(false);
 
-                    BDPreferences.clearPref(context);
-                    context.startActivity(new Intent(context, LoginActivity.class));
-                    context.finish();
-
-                    showToast(context, context.getString(R.string.prompt_logged_out));
-                })
-                .setNegativeButton(android.R.string.no, (dialogInterface, i) -> dialogInterface.dismiss());
-
-        AlertDialog alertDialog = alertBuilder.create();
-        alertDialog.show();
+        return alert;
     }
 
     public static void clearNotification(int id, Context context) {

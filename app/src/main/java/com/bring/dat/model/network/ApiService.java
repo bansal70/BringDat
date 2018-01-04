@@ -25,4 +25,7 @@ public interface ApiService {
 
     @POST("webservices.php?action=getOrder")
     Observable<OrderDetails> getOrderDetails(@QueryMap HashMap<String, String> mapParams);
+
+    @POST("webservices.php?action=printStaus")
+    Observable<OrderDetails> getReceipt(@QueryMap HashMap<String, String> mapParams);
 }

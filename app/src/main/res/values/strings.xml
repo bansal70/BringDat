@@ -44,4 +44,9 @@
     <string name="prompt_total">Total:</string>
     <string name="prompt_connect_printer">Please connect a Bluetooth printer</string>
     <string name="error_bt_canceled">Please turn on bluetooth</string>
+    <string name="menu_bluetooth">Bluetooth</string>
+    <string name="error_connection_down">Connection lost!</string>
+    <string name="error_internet_disconnected">No internet connection. Please try again.</string>
+    <string name="prompt_print_receipt">Print Receipt</string>
+    <string name="alert_reprint_receipt">Are you sure to reprint the receipt?</string>
 </resources>
