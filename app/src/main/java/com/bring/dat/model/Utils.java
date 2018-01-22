@@ -19,6 +19,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.LayerDrawable;
@@ -40,7 +41,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.style.StyleSpan;
-import android.view.KeyEvent;
 import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
@@ -54,20 +54,20 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bring.dat.R;
-import com.bring.dat.views.LoginActivity;
-import com.bring.dat.views.services.BTService;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -128,7 +128,8 @@ public class Utils {
         ((Activity) mContext).overridePendingTransition(R.anim.slide_in_from_left, R.anim.slide_out_to_right);
     }
 
-    public static void gotoNextActivityAnimation(Context mContext) {
+    public static void gotoNextActivityAnimation(Context mContext, Class<?> className) {
+        mContext.startActivity(new Intent(mContext, className));
         ((Activity) mContext).overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_to_left);
     }
 
@@ -288,6 +289,101 @@ public class Utils {
         };
 
         new TimePickerDialog(mContext, t, hour, minute, true).show();
+    }
+
+    public static String getDateByRange(int day) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        long dateMillis = System.currentTimeMillis() - (day * 24 * 60 * 60 * 1000);
+
+        String daysAgo = sdf.format(dateMillis);
+
+        Timber.e("Date:: %s", daysAgo);
+        return daysAgo;
+    }
+
+    public static String getFirstDayOfMonth() throws ParseException {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        String defaultDate = sdf.format(c.getTime());
+        Date date = sdf.parse(defaultDate);
+        c.setTime(date);
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMinimum(Calendar.DAY_OF_MONTH));
+
+        System.out.println(sdf.format(c.getTime()));
+
+        return sdf.format(c.getTime());
+    }
+
+    public static String getLastDayOfMonth() throws ParseException {
+        Calendar c = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        String defaultDate = sdf.format(c.getTime());
+        Date date = sdf.parse(defaultDate);
+        c.setTime(date);
+
+        c.set(Calendar.DAY_OF_MONTH, c.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        System.out.println(sdf.format(c.getTime()));
+
+        return sdf.format(c.getTime());
+    }
+
+    public static String getFirstDateOfMonth() throws ParseException {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DATE, 1);
+        calendar.set(Calendar.DATE ,calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(calendar.getTime());
+    }
+
+    public static String getLastDateOfMonth() throws ParseException {
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(Calendar.DATE, 1);
+        calendar.set(Calendar.DATE ,calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        return sdf.format(calendar.getTime());
+    }
+
+    public static String getDaysAgo(int days) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.add(Calendar.DAY_OF_MONTH, days);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        return sdf.format(calendar.getTime());
+    }
+
+    public static String getFirstDateOfPreviousMonth() {
+        Calendar aCalendar = Calendar.getInstance();
+        aCalendar.add(Calendar.MONTH, -1);
+        aCalendar.set(Calendar.DATE, 1);
+
+        // Date firstDateOfPreviousMonth = aCalendar.getTime();
+        aCalendar.set(Calendar.DATE,     aCalendar.getActualMinimum(Calendar.DAY_OF_MONTH));
+        //Date lastDateOfPreviousMonth = aCalendar.getTime();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        return sdf.format(aCalendar.getTime());
+    }
+
+    public static String getLastDateOfPreviousMonth() {
+        Calendar aCalendar = Calendar.getInstance();
+        aCalendar.add(Calendar.MONTH, -1);
+        aCalendar.set(Calendar.DATE, 1);
+
+        aCalendar.set(Calendar.DATE,     aCalendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        return sdf.format(aCalendar.getTime());
+    }
+
+    public static  Point getPointOfView(View view) {
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        return new Point(location[0], location[1]);
     }
 
     public static void hideKeyboard(Context mContext, View view) {

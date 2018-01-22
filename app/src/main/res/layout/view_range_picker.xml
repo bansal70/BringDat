@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="@dimen/_200sdp"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardUseCompatPadding="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvToday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_today"
+            android:padding="@dimen/_15sdp"/>
+
+        <TextView
+            android:id="@+id/tvYesterday"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_yesterday"
+            android:padding="@dimen/_15sdp"/>
+
+        <TextView
+            android:id="@+id/tvLastWeek"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_last_week"
+            android:padding="@dimen/_15sdp"/>
+
+        <TextView
+            android:id="@+id/tvLast30Days"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_last_month"
+            android:padding="@dimen/_15sdp"/>
+
+        <TextView
+            android:id="@+id/tvThisMonth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_this_month"
+            android:padding="@dimen/_15sdp"/>
+
+        <TextView
+            android:id="@+id/tvPreviousMonth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_previous_month"
+            android:padding="@dimen/_15sdp"/>
+
+        <TextView
+            android:id="@+id/tvCustomRange"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_custom_range"
+            android:padding="@dimen/_15sdp"/>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

@@ -12,6 +12,12 @@ public class OrdersResponse {
     public Boolean success;
     @SerializedName("msg")
     public String msg;
+    @SerializedName("totalpending")
+    public String totalPending;
+    @SerializedName("totalworking")
+    public String totalWorking;
+    @SerializedName("totalcompleted")
+    public String totalCompleted;
     @SerializedName("totalrecords")
     public String totalRecords;
     @SerializedName("totalpages")

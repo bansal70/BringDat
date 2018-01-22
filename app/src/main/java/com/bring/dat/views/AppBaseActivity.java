@@ -19,6 +19,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
 import android.view.View;
@@ -123,6 +125,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
     public void serverError(Throwable throwable) {
         dismissDialog();
+        hideProgressBar();
         showToast(getString(R.string.error_server));
         if (throwable instanceof HttpException) {
             Response<?> response = ((HttpException) throwable).response();
@@ -132,6 +135,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
     public void serverError() {
         dismissDialog();
+        hideProgressBar();
         showToast(getString(R.string.error_server));
     }
 
@@ -199,7 +203,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         if (requestCode != PERMISSION_REQUEST_CODE || !hasAllPermissionsGranted(grantResults)) {
-            showToast("Please grant all the permissions");
+            showToast(getString(R.string.error_permissions_denied));
         }
 
     }
@@ -213,6 +217,10 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         return true;
     }
 
+    public void  goToFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment).addToBackStack(null).commitAllowingStateLoss();
+    }
 
     private void resetTitles() {
         try {

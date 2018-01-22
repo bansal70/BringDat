@@ -1,10 +1,7 @@
 package com.bring.dat.views;
 
-import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.widget.EditText;
-import android.widget.TextView;
 
 import com.bring.dat.R;
 import com.bring.dat.model.BDPreferences;
@@ -22,12 +19,6 @@ import io.reactivex.schedulers.Schedulers;
 
 public class LoginActivity extends AppBaseActivity {
 
-    @BindView(R.id.toolbar_login)
-    Toolbar toolbar;
-
-    @BindView(R.id.toolbarTitle)
-    TextView tvTitle;
-
     @BindView(R.id.etEmail)
     EditText etEmail;
 
@@ -40,15 +31,7 @@ public class LoginActivity extends AppBaseActivity {
         setContentView(R.layout.activity_login);
         ButterKnife.bind(this);
 
-        if (!BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID).isEmpty()) {
-            startActivity(new Intent(mContext, OrdersListActivity.class));
-            finish();
-        }
-
         FirebaseInstanceId.getInstance().getToken();
-
-        setSupportActionBar(toolbar);
-        tvTitle.setText(getString(R.string.title_activity_login));
     }
 
     @OnClick(R.id.btLogin)
@@ -92,8 +75,7 @@ public class LoginActivity extends AppBaseActivity {
             BDPreferences.putString(mContext, Constants.KEY_TOKEN, mData.token);
 
             showToast(getString(R.string.success_login));
-            startActivity(new Intent(mContext, OrdersListActivity.class));
-            Utils.gotoNextActivityAnimation(mContext);
+            Utils.gotoNextActivityAnimation(mContext, HomeActivity.class);
             finish();
         } else {
             showToast(getString(R.string.eror_invalid_credentials));

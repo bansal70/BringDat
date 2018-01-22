@@ -43,4 +43,14 @@ public class Operations {
 
         return hashMap;
     }
+
+    public static HashMap<String, String> reportParams(String restaurantId, String startDate, String endDate, String token) {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("restaurantId", restaurantId);
+        hashMap.put("startDate", startDate);
+        hashMap.put("endDate", endDate);
+        hashMap.put("token", token);
+
+        return hashMap;
+    }
 }

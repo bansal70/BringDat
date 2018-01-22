@@ -9,19 +9,34 @@
     <include layout="@layout/toolbar"
         android:id="@+id/toolbar"/>
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/listOrders"
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeToRefresh"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"/>
+        android:layout_height="wrap_content">
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        android:layout_width="@dimen/_30sdp"
-        android:layout_height="@dimen/_30sdp"
-        style="?android:progressBarStyle"
-        android:layout_weight="0.001"
-        android:visibility="gone"
-        android:layout_gravity="center_horizontal"/>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/listOrders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+
+            <ProgressBar
+                android:id="@+id/progressBar"
+                android:layout_width="@dimen/_30sdp"
+                android:layout_height="@dimen/_30sdp"
+                style="?android:progressBarStyle"
+                android:layout_weight="0.001"
+                android:visibility="gone"
+                android:layout_gravity="center_horizontal"/>
+
+        </LinearLayout>
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
 
 </LinearLayout>

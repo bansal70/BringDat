@@ -15,4 +15,8 @@ public class Constants {
     public static final String KEY_TOKEN = "token";
     public static final String KEY_RESTAURANT_ID = "restaurantID";
     public static final String KEY_BT_ADDRESS = "BT_ADDRESS";
+    public static final String KEY_LOGIN_TYPE = "login_type";
+
+    public static final String LOGIN_ADMIN = "admin";
+    public static final String LOGIN_LOGGER = "logger";
 }

@@ -138,5 +138,13 @@ public class Cart {
     public String specialinstruction;
     @SerializedName("q")
     public Integer q;
+    @SerializedName("toppingsname")
+    public String toppingsName;
+    @SerializedName("full")
+    public String full;
+    @SerializedName("half1")
+    public String half1;
+    @SerializedName("half2")
+    public String half2;
 
 }

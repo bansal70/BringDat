@@ -5,14 +5,17 @@ package com.bring.dat.model;
  */
 
 import android.content.Context;
+import android.content.Intent;
 
 import com.bring.dat.model.network.APIClient;
 import com.bring.dat.model.network.ApiService;
 import com.bring.dat.model.pojo.Cart;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
+import com.bring.dat.views.OrdersListActivity;
 import com.bring.dat.views.services.BTService;
 import com.bring.dat.views.services.BluetoothService;
+import com.google.gson.Gson;
 
 import java.util.List;
 
@@ -24,7 +27,31 @@ import timber.log.Timber;
 
 public class PrintReceipt {
 
-    private static void writeWithFormat(byte[] buffer, final byte[] pFormat, final byte[] pAlignment) {
+    private static void printLeft(String txt) {
+        BluetoothService mService = BTService.mService;
+        mService = BTService.mService;
+        byte[] format = new byte[]{0x1B, 'a', 0x00};
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    private static void printCenter(String txt) {
+        BluetoothService mService = BTService.mService;
+        mService = BTService.mService;
+        byte[] format = new byte[]{0x1B, 'a', 0x01};
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    private static void printRight(String txt) {
+        BluetoothService mService = BTService.mService;
+        mService = BTService.mService;
+        byte[] format = new byte[]{0x1B, 'a', 0x02};
+        mService.write(format);
+        mService.sendMessage(txt,"GBK");
+    }
+
+    private static void writeWithFormat(String message, byte[] buffer, final byte[] pFormat, final byte[] pAlignment) {
         BluetoothService mService = BTService.mService;
         try {
             // Notify printer it should be printed with given alignment:
@@ -32,7 +59,8 @@ public class PrintReceipt {
             // Notify printer it should be printed in the given format:
             mService.write(pFormat);
             // Write the actual data:
-            mService.write(buffer);
+            mService.sendMessage(message,"GBK");
+            //mService.write(buffer);
 
         } catch (Exception e) {
             Timber.e(e, "Exception during write");
@@ -40,7 +68,6 @@ public class PrintReceipt {
     }
 
     public static void printOrderReceipt(Context mContext, OrderDetails mOrderDetails) {
-
         String msg;
         String DIVIDER = "--------------------------------";
         String DIVIDER_DOUBLE = "================================";
@@ -53,99 +80,105 @@ public class PrintReceipt {
         List<Cart> mCartList = data.cart;
 
         msg = mOrder.merchantName + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
 
         msg = mOrder.merchantAddress + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
 
         msg = mOrder.merchantPhone + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
 
         msg = DIVIDER + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
 
-        msg = "DELIVERY" + DIVIDER + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
+        msg = "DELIVERY" + BREAK + DIVIDER + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
 
-        msg = mOrder.ordergenerateid + SPACE5 + mOrder.deliverydate + " " + mOrder.orderdate ;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+        msg = mOrder.ordergenerateid + SPACE5 + mOrder.deliverydate + " " + mOrder.orderdate + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = mOrder.orderdeliverydate + BREAK + DIVIDER_DOUBLE + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = mOrder.customername + " " + mOrder.customerlastname + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
-        msg = String.format("%s, %s, %s", mOrder.cityName, mOrder.deliverystate, mOrder.deliveryzip) + "," + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+        msg = AppUtils.userAddress(mOrder) + "," + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = mOrder.customercellphone + BREAK + DIVIDER_DOUBLE;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
 
-        msg = "Qty" + SPACE4 + "Item";
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        msg = "Qty";
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-        msg = "Price";
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        msg = SPACE4 + "Item";
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+
+        msg = SPACE5 + "Price" + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         for (int i = 0; i < mCartList.size(); i++) {
             Cart mCart = mCartList.get(i);
-            msg = " " + mCart.qty + "   " + mCart.item;
-            writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+            msg = " " + mCart.qty;
+            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-            msg = Constants.CURRENCY + mCart.price;
-            writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+            msg =  "   " + mCart.item;
+            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+
+            msg = Constants.CURRENCY + mCart.price + BREAK;
+            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
         }
 
         msg = BREAK + "Subtotal:";
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-        msg = Constants.CURRENCY + mOrder.ordersubtotal ;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        msg = SPACE5 + Constants.CURRENCY + mOrder.ordersubtotal + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Tax(" + mOrder.taxvalue + "%):";
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-        msg = Constants.CURRENCY + mOrder.taxamount;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        msg = SPACE5 + Constants.CURRENCY + mOrder.taxamount  + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Delivery Charge:";
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-        msg = Constants.CURRENCY + mOrder.deliveryamount;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        msg = SPACE5 + Constants.CURRENCY + mOrder.deliveryamount + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Convenience Fee:";
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-        msg = Constants.CURRENCY + mOrder.convenienceFee;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
-
+        msg = SPACE5 + Constants.CURRENCY + mOrder.convenienceFee + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         if (!mOrder.siteDiscountAmount.isEmpty() || !mOrder.siteDiscountAmount.equals("0")) {
-            msg = "Discount(" + mOrder.siteDiscountPercent + "% :)";
-            writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+            msg = "Discount(" + mOrder.siteDiscountPercent + "%):";
+            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-            msg = Constants.CURRENCY + mOrder.siteDiscountAmount;
-            writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+            msg = SPACE5 + Constants.CURRENCY + mOrder.siteDiscountAmount + BREAK;
+            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
         }
 
         msg = "Tip:";
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-        msg = Constants.CURRENCY + mOrder.tipamount;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        msg = SPACE5 + Constants.CURRENCY + mOrder.tipamount + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Total:";
-        writeWithFormat(msg.getBytes(), new Formatter().bold().height().get(), Formatter.leftAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.leftAlign());
 
-        msg = Constants.CURRENCY + mOrder.ordertotalprice + BREAK + DIVIDER_DOUBLE;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        msg = SPACE5 + Constants.CURRENCY + mOrder.ordertotalprice + BREAK + DIVIDER_DOUBLE;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.rightAlign());
 
-        msg = mOrder.paymentType + BREAK + DIVIDER_DOUBLE + BREAK + BREAK + BREAK;
-        writeWithFormat(msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+        msg = BREAK + BREAK + BREAK + mOrder.paymentType + BREAK + BREAK + BREAK + BREAK + DIVIDER_DOUBLE + BREAK + BREAK + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
-       // receiptPrinted(mContext, mOrder.orderid);
+       receiptPrinted(mContext, mOrder.orderid);
+       //startMain(mContext, mOrderDetails);
     }
 
     private static void receiptPrinted(Context mContext, String orderID) {
@@ -156,6 +189,9 @@ public class PrintReceipt {
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorResumeNext(throwable -> {})
+                .doOnNext(orderDetails -> {
+
+                })
                 .doOnError(PrintReceipt::serverError)
                 .subscribe();
     }
@@ -165,5 +201,12 @@ public class PrintReceipt {
             Response<?> response = ((HttpException) throwable).response();
             Timber.e(response.message());
         }
+    }
+
+    private static void startMain(Context mContext, OrderDetails mOrderDetails) {
+        Intent intent = new Intent(mContext, OrdersListActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.putExtra("orderDetails", new Gson().toJson(mOrderDetails));
+        mContext.startActivity(intent);
     }
 }

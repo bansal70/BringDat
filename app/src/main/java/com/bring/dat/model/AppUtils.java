@@ -14,7 +14,7 @@ import com.bring.dat.R;
 import com.bring.dat.model.pojo.Cart;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
-import com.bring.dat.views.LoginActivity;
+import com.bring.dat.views.MainActivity;
 import com.bring.dat.views.services.BTService;
 import com.bring.dat.views.services.BluetoothService;
 
@@ -36,7 +36,7 @@ public class AppUtils {
                     dialogInterface.dismiss();
 
                     BDPreferences.clearPref(mActivity);
-                    mActivity.startActivity(new Intent(mActivity, LoginActivity.class));
+                    mActivity.startActivity(new Intent(mActivity, MainActivity.class));
                     mActivity.finish();
                     Intent intent = new Intent(mActivity, BTService.class);
                     mActivity.stopService(intent);
@@ -54,6 +54,34 @@ public class AppUtils {
             Response<?> response = ((HttpException) throwable).response();
             Timber.e(response.message());
         }
+    }
+
+    public static String userAddress(Order mOrder) {
+        String address = "";
+
+        if (!mOrder.deliverydoornumber.isEmpty()) {
+            address = mOrder.deliverydoornumber + ", ";
+        }
+        if (!mOrder.deliverystreet.isEmpty()) {
+            address += mOrder.deliverystreet + ", ";
+        }
+        if (!mOrder.deliverylandmark.isEmpty()) {
+            address += mOrder.deliverylandmark + ", ";
+        }
+        if (!mOrder.deliveryarea.isEmpty()) {
+            address += mOrder.deliveryarea + ", ";
+        }
+        if (!mOrder.deliverycity.isEmpty()) {
+            address += mOrder.cityName + ", ";
+        }
+        if (!mOrder.deliverystate.isEmpty()) {
+            address += mOrder.deliverystate + ", ";
+        }
+        if (!mOrder.deliveryzip.isEmpty()) {
+            address += mOrder.deliveryzip;
+        }
+
+        return address;
     }
 
     public static String headerOrderReceipt(OrderDetails mOrderDetails) {

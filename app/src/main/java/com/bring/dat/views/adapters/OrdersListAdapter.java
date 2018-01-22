@@ -2,6 +2,7 @@ package com.bring.dat.views.adapters;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.Intent;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -12,6 +13,7 @@ import android.widget.Button;
 import android.widget.TextView;
 
 import com.bring.dat.R;
+import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Operations;
@@ -20,6 +22,7 @@ import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.views.AppBaseActivity;
+import com.bring.dat.views.OrderDetailsActivity;
 
 import java.util.List;
 
@@ -50,13 +53,21 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
     @Override
     public void onBindViewHolder(ViewHolder holder, int position) {
         Order mOrderDetails = mListOrderDetails.get(position);
+        String mDeliveryType = mOrderDetails.deliverytype.substring(0, 1).toUpperCase() + mOrderDetails.deliverytype.substring(1);
+
+        if (mDeliveryType.equalsIgnoreCase("pickup"))
+            holder.tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_pickup, 0, 0, 0);
+        else
+            holder.tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_delivery, 0, 0, 0);
+
+        holder.tvDeliveryType.setText(mDeliveryType);
         holder.tvDate.setText(String.format("%s %s", mOrderDetails.orderDate, mOrderDetails.orderdate));
         holder.tvName.setText(String.format("%s %s", mOrderDetails.customername, mOrderDetails.customerlastname));
         holder.tvContact.setText(mOrderDetails.customercellphone);
         holder.tvPaymentType.setText(mOrderDetails.paymentType);
         holder.tvApartment.setText(mOrderDetails.deliverystreet);
         holder.tvPriority.setText(mOrderDetails.deliverytime);
-        holder.tvAddress.setText(String.format("%s, %s, %s", mOrderDetails.cityName, mOrderDetails.deliverystate, mOrderDetails.deliveryzip));
+        holder.tvAddress.setText(AppUtils.userAddress(mOrderDetails));
 
         int color = mOrderDetails.status.contains("cancel") || mOrderDetails.status.contains("decline") ?
                 ContextCompat.getColor(mContext, R.color.colorRed) :
@@ -82,6 +93,9 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
+
+        @BindView(R.id.tvDeliveryType)
+        TextView tvDeliveryType;
 
         @BindView(R.id.tvDate)
         TextView tvDate;
@@ -118,13 +132,11 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
             ButterKnife.bind(this, itemView);
 
             itemView.setOnClickListener(view -> {
-              //  Order mOrder = mListOrderDetails.get(getAdapterPosition());
-
-                if (mActivity.isInternetActive())
-                    alertPrint(getAdapterPosition());
-
-                /* mContext.startActivity(new Intent(mContext, PrintActivity.class)
-                        .putExtra("orderId", mOrder.orderid)); */
+                Order mOrder = mListOrderDetails.get(getAdapterPosition());
+                /*if (mActivity.isInternetActive())
+                    alertPrint(getAdapterPosition());*/
+                mContext.startActivity(new Intent(mContext, OrderDetailsActivity.class)
+                        .putExtra("orderId", mOrder.orderid));
             });
         }
 
@@ -145,6 +157,7 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
         AlertDialog alert = Utils.createAlert(mActivity, mContext.getString(R.string.prompt_print_receipt), mContext.getString(R.string.alert_reprint_receipt));
         alert.setButton(Dialog.BUTTON_POSITIVE, mContext.getString(android.R.string.yes),
                 (dialogInterface, i) -> getDetails(mOrder.orderid, position));
+        alert.setButton(Dialog.BUTTON_NEGATIVE, mContext.getString(android.R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss());
         alert.show();
     }
 
@@ -174,4 +187,5 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
             PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
         }
     }
+
 }

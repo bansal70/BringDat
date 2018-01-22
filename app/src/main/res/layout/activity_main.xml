@@ -1,18 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.bring.dat.views.MainActivity">
+    android:gravity="center"
+    android:padding="@dimen/_20sdp"
+    android:background="@color/colorSkyBlue"
+    android:orientation="vertical">
 
-    <TextView
+    <ImageView
+        android:id="@+id/ivLoginImages"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:src="@drawable/logo"
+        android:contentDescription="@null"/>
 
-</android.support.constraint.ConstraintLayout>
+    <Button android:id="@+id/btAdminLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/shape_button_white_rounded"
+        android:foreground="?selectableItemBackgroundBorderless"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/_20sdp"
+        android:padding="@dimen/_15sdp"
+        android:text="@string/prompt_admin_login"
+        android:textSize="@dimen/_14sdp" />
+
+    <Button
+        android:id="@+id/btLoggerLogin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:background="@drawable/shape_button_orange_rounded"
+        android:foreground="?selectableItemBackgroundBorderless"
+        android:gravity="center"
+        android:layout_marginTop="@dimen/_15sdp"
+        android:padding="@dimen/_15sdp"
+        android:text="@string/prompt_logger_login"
+        android:textColor="@color/White"
+        android:textSize="@dimen/_14sdp" />
+
+</LinearLayout>

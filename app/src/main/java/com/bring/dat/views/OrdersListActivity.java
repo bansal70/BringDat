@@ -3,6 +3,7 @@ package com.bring.dat.views;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,9 +22,11 @@ import com.bring.dat.model.Operations;
 import com.bring.dat.model.RecyclerPagination;
 import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
+import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.model.pojo.OrdersResponse;
 import com.bring.dat.views.adapters.OrdersListAdapter;
 import com.bring.dat.views.services.BTService;
+import com.google.gson.Gson;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +39,9 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
+import retrofit2.HttpException;
+import retrofit2.Response;
+import timber.log.Timber;
 
 public class OrdersListActivity extends AppBaseActivity {
 
@@ -50,6 +56,11 @@ public class OrdersListActivity extends AppBaseActivity {
 
     @BindView(R.id.progressBar)
     ProgressBar mProgressBar;
+
+    @BindView(R.id.swipeToRefresh)
+    SwipeRefreshLayout mSwipeRefreshLayout;
+
+    SwipeRefreshLayout.OnRefreshListener onRefreshListener;
 
     private List<Order> mOrdersList;
     private OrdersListAdapter mOrdersListAdapter;
@@ -80,6 +91,16 @@ public class OrdersListActivity extends AppBaseActivity {
 
         initViews();
         locationPermission();
+
+        onRefreshListener = () -> {
+            pagination = PublishProcessor.create();
+            compositeDisposable = new CompositeDisposable();
+            mOrdersList.clear();
+            page = 0;
+            fetchData();
+        };
+
+        mSwipeRefreshLayout.setOnRefreshListener(onRefreshListener);
     }
 
     private void initViews() {
@@ -111,23 +132,6 @@ public class OrdersListActivity extends AppBaseActivity {
         fetchData();
     }
 
-    private void setOrdersList(OrdersResponse ordersResponse) {
-        if (ordersResponse.success) {
-            OrdersResponse.Data mOrdersData = ordersResponse.data;
-            mOrdersList.addAll(mOrdersData.orderList);
-            mOrdersListAdapter.notifyDataSetChanged();
-        } else if (page > 1){
-            showToast(getString(R.string.error_no_more_orders));
-        } else {
-            showToast(ordersResponse.msg);
-        }
-        requestOnWay = false;
-
-        mProgressBar.setVisibility(View.GONE);
-
-        dismissDialog();
-    }
-
     private void connectionAlert(boolean isFirstTime) {
         alert = Utils.createAlert(this, getString(R.string.error_connection_down), getString(R.string.error_internet_disconnected));
 
@@ -147,13 +151,28 @@ public class OrdersListActivity extends AppBaseActivity {
         alert.show();
     }
 
+    private void setOrdersList(OrdersResponse ordersResponse) {
+        if (ordersResponse.success) {
+            OrdersResponse.Data mOrdersData = ordersResponse.data;
+            mOrdersList.addAll(mOrdersData.orderList);
+            mOrdersListAdapter.notifyDataSetChanged();
+        } else if (page > 1){
+            showToast(getString(R.string.error_no_more_orders));
+        } else {
+            showToast(ordersResponse.msg);
+        }
+        requestOnWay = false;
+
+        mProgressBar.setVisibility(View.GONE);
+
+        dismissDialog();
+    }
+
     private void fetchData() {
         if (!isInternetActive()) {
             connectionAlert(true);
             return;
         }
-
-//        alert.dismiss();
 
         showDialog();
 
@@ -162,10 +181,10 @@ public class OrdersListActivity extends AppBaseActivity {
                 .concatMap(integer -> getOrders())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorResumeNext(throwable -> {
-                   serverError();
+                   responseError();
                 })
                 .doOnNext(this::setOrdersList)
-                .doOnError(this::serverError)
+                .doOnError(this::responseError)
                 .subscribe();
 
         compositeDisposable.add(disposable);
@@ -173,9 +192,28 @@ public class OrdersListActivity extends AppBaseActivity {
     }
 
     private Flowable<OrdersResponse> getOrders() {
+        mSwipeRefreshLayout.setRefreshing(false);
         return apiService.getOrders(Operations.ordersListParams(restId, page++, token))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    void responseError(Throwable throwable) {
+        dismissDialog();
+        showToast(getString(R.string.error_server));
+        mSwipeRefreshLayout.setRefreshing(false);
+        mProgressBar.setVisibility(View.GONE);
+        if (throwable instanceof HttpException) {
+            Response<?> response = ((HttpException) throwable).response();
+            Timber.e(response.message());
+        }
+    }
+
+    void responseError() {
+        dismissDialog();
+        showToast(getString(R.string.error_server));
+        mSwipeRefreshLayout.setRefreshing(false);
+        mProgressBar.setVisibility(View.GONE);
     }
 
     @Override
@@ -204,10 +242,21 @@ public class OrdersListActivity extends AppBaseActivity {
         super.onNewIntent(intent);
 
         boolean order = intent.getBooleanExtra("order", false);
-        if (order) {
-            page = 0;
+
+        String details = intent.getStringExtra("orderDetails");
+        OrderDetails mOrderDetails = new Gson().fromJson(details, OrderDetails.class);
+        OrderDetails.Data data = mOrderDetails.data;
+        Order mOrder = data.order.get(0);
+
+        mOrdersList.set(0, mOrder);
+        mOrder.order_print_status = "1";
+        mOrdersListAdapter.notifyDataSetChanged();
+
+        /*if (order) {
+
             fetchData();
-        }
+            page = 0;
+        }*/
     }
 
     @Override

@@ -95,11 +95,11 @@ public class BTService  extends Service {
                             Utils.showToast(mContext, getString(R.string.success_connection));
                             break;
                         case BluetoothService.STATE_CONNECTING:
-                            Timber.e("Bluetooth is connecting");
+                       //     Timber.e("Bluetooth is connecting");
                             break;
                         case BluetoothService.STATE_LISTEN:
                         case BluetoothService.STATE_NONE:
-                            Timber.e("Bluetooth state listen or none");
+                       //     Timber.e("Bluetooth state listen or none");
                             break;
                     }
                     break;
