@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="@dimen/_5sdp"
+    app:cardUseCompatPadding="true"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/_30sdp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center"
+        android:paddingTop="@dimen/_10sdp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/_15sdp"
+            android:paddingRight="@dimen/_15sdp"
+            android:paddingStart="@dimen/_15sdp"
+            android:paddingEnd="@dimen/_15sdp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_custom_range"
+                android:textSize="@dimen/_18sdp"
+                android:gravity="center"
+                android:textColor="@color/colorBlack" />
+
+            <TextView
+                android:id="@+id/tvFromDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_20sdp"
+                android:hint="@string/prompt_from_date"
+                android:drawableLeft="@drawable/date_and_time"
+                android:drawableStart="@drawable/date_and_time"
+                android:drawablePadding="@dimen/_10sdp"
+                android:padding="@dimen/_10sdp"
+                android:background="@drawable/custom_edit_text_bg"
+                android:foreground="?selectableItemBackground"/>
+
+            <TextView
+                android:id="@+id/tvToDate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:hint="@string/prompt_to_date"
+                android:padding="@dimen/_10sdp"
+                android:drawablePadding="@dimen/_10sdp"
+                android:drawableLeft="@drawable/date_and_time"
+                android:drawableStart="@drawable/date_and_time"
+                android:background="@drawable/custom_edit_text_bg"
+                android:foreground="?selectableItemBackground"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_1sdp"
+            android:visibility="gone"
+            android:layout_marginTop="@dimen/_20sdp"
+            android:background="@color/colorGray"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/_10sdp"
+            android:layout_gravity="end">
+
+            <Button
+                android:id="@+id/btCancel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_cancel"
+                android:layout_gravity="end"
+                android:textAllCaps="true"
+                android:textSize="@dimen/_13sdp"
+                style="?android:attr/buttonBarButtonStyle"
+                android:textColor="@color/colorGray"
+                android:padding="@dimen/_15sdp"/>
+
+            <Button
+                android:id="@+id/btApply"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_apply"
+                android:layout_gravity="end"
+                android:textAllCaps="true"
+                android:textSize="@dimen/_13sdp"
+                style="?android:attr/buttonBarButtonStyle"
+                android:textColor="@color/colorAccent"
+                android:padding="@dimen/_15sdp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

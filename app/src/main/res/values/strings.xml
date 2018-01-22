@@ -117,5 +117,11 @@
     <string name="prompt_previous_month">Last month</string>
     <string name="prompt_custom_range">Custom range</string>
     <string name="prompt_no_reports">No reports found</string>
+    <string name="prompt_apply">Apply</string>
+    <string name="prompt_cancel">Cancel</string>
+    <string name="prompt_to_date">To Date</string>
+    <string name="prompt_from_date">From date</string>
+    <string name="error_empty_dates">Please select both the dates</string>
+    <string name="prompt_switch_admin">Switch To Admin</string>
 
 </resources>

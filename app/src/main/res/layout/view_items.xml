@@ -45,19 +45,20 @@
 
         <TextView
             android:id="@+id/tvQuantity"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.1"
             android:textSize="@dimen/_14sdp"
+            android:layout_gravity="top|center"
+            android:gravity="center"
             android:textColor="@color/black"/>
 
         <TextView
             android:id="@+id/tvItemPrice"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="0.3"
             android:gravity="end"
-            android:text="$585"
             android:textColor="@color/text_color_work_order" />
 
     </LinearLayout>

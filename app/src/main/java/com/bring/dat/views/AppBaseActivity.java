@@ -219,7 +219,15 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
     public void  goToFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.fragment_container, fragment).addToBackStack(null).commitAllowingStateLoss();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack("");
+        transaction.commit();
+    }
+
+    public void  goToHomeFragment(Fragment fragment) {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragment_container, fragment);
+        transaction.addToBackStack("Home").commit();
     }
 
     private void resetTitles() {

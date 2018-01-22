@@ -1,11 +1,13 @@
 package com.bring.dat.views.fragments;
 
-import android.graphics.Color;
 import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.CardView;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,18 +22,15 @@ import com.bring.dat.model.Constants;
 import com.bring.dat.model.Operations;
 import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Reports;
-
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import com.bring.dat.views.adapters.ReportsDateAdapter;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import butterknife.Unbinder;
 import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 public class ReportsFragment extends AppBaseFragment{
@@ -40,6 +39,9 @@ public class ReportsFragment extends AppBaseFragment{
 
     @BindView(R.id.reportsLL)
     LinearLayout reportsLL;
+
+    @BindView(R.id.cardDate)
+    CardView cardDate;
 
     @BindView(R.id.tvDateRange)
     TextView tvDateRange;
@@ -76,8 +78,11 @@ public class ReportsFragment extends AppBaseFragment{
 
     String endDate = "", startDate, restId, token;
 
-    TextView tvToday, tvYesterday, tvLastWeek, tvLast30Days, tvThisMonth, tvPreviousMonth, tvCustomRange;
     PopupWindow popupWindow;
+    ReportsDateAdapter reportsDateAdapter;
+    ViewGroup parent;
+
+    private CompositeDisposable compositeDisposable = new CompositeDisposable();
 
     @Nullable
     @Override
@@ -86,26 +91,27 @@ public class ReportsFragment extends AppBaseFragment{
 
         unbinder = ButterKnife.bind(this, view);
 
+        parent = container;
         initDefault();
 
         return view;
     }
 
     private void initDefault() {
-        Calendar c = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-        endDate = sdf.format(c.getTime());
-
-        startDate = Utils.getDateByRange(6);
+        endDate = Utils.getCurrentDate();
+        startDate = Utils.getDaysAgo(0);
         getReports(startDate, endDate);
+        setReportsBy();
     }
 
     private void getReports(String startDate, String endDate) {
+        tvDateRange.setText(String.format("%s - %s", Utils.getFullDate(startDate), Utils.getFullDate(endDate)));
+
         restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
         token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
 
-        mActivity.showProgressBar();
-        apiService.getReports(Operations.reportParams(restId, startDate, endDate, token))
+        mActivity.showDialog();
+        Disposable disposable = apiService.getReports(Operations.reportParams(restId, startDate, endDate, token))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorResumeNext(throwable -> {
@@ -114,13 +120,15 @@ public class ReportsFragment extends AppBaseFragment{
                 .doOnNext(this::setReportsData)
                 .doOnError(mActivity::serverError)
                 .subscribe();
+
+        compositeDisposable.add(disposable);
     }
 
     private void setReportsData(Reports reports) {
-        mActivity.hideProgressBar();
+        mActivity.dismissDialog();
 
         if (!reports.success) {
-            showToast(getString(R.string.prompt_no_reports));
+            showToast(reports.msg);
             return;
         }
 
@@ -133,92 +141,40 @@ public class ReportsFragment extends AppBaseFragment{
         tvTax.setText(String.format("%s%s", Constants.CURRENCY, data.taxAmount));
         tvPositiveAdjustments.setText(String.format("%s%s", Constants.CURRENCY, data.adjustPositive));
         tvNegativeAdjustments.setText(String.format("%s%s", Constants.CURRENCY, data.adjustNegative));
-        tvCancelOrders.setText(String.format("%s%s", Constants.CURRENCY, data.cancelOrder));
-        tvTotalOrders.setText(String.format("%s%s", Constants.CURRENCY, data.totalOrders));
+        tvCancelOrders.setText(data.cancelOrder);
+        tvTotalOrders.setText(data.totalOrders);
         tvGrossTotal.setText(String.format("%s%s", Constants.CURRENCY, data.grossTotal));
     }
 
-    @OnClick(R.id.tvDateRange)
+    @OnClick(R.id.cardDate)
     public void pickDate() {
-        View layout = LayoutInflater.from(mContext).inflate(R.layout.view_range_picker, null);
-
-        tvToday = layout.findViewById(R.id.tvToday);
-        tvYesterday = layout.findViewById(R.id.tvYesterday);
-        tvLastWeek = layout.findViewById(R.id.tvLastWeek);
-        tvLast30Days = layout.findViewById(R.id.tvLast30Days);
-        tvThisMonth = layout.findViewById(R.id.tvThisMonth);
-        tvPreviousMonth = layout.findViewById(R.id.tvPreviousMonth);
-        tvCustomRange = layout.findViewById(R.id.tvCustomRange);
-
-        popupWindow = new PopupWindow(layout, tvDateRange.getWidth() - 20, LinearLayout.LayoutParams.WRAP_CONTENT, true);
-        popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-        Point point = getPointOfView(tvDateRange);
-        popupWindow.showAtLocation(tvDateRange, Gravity.NO_GRAVITY, point.x, point.y + tvDateRange.getHeight());
-
-        try {
-            setListeners();
-        } catch (ParseException e) {
-            e.printStackTrace();
+        if (popupWindow != null) {
+            Point point = Utils.getPointOfView(tvDateRange);
+            popupWindow.setWidth(cardDate.getWidth() - 10);
+            popupWindow.setHeight(LinearLayout.LayoutParams.WRAP_CONTENT);
+            popupWindow.showAtLocation(parent, Gravity.NO_GRAVITY, point.x, point.y + tvDateRange.getHeight());
         }
     }
 
-    private void setListeners() throws ParseException {
-        Calendar calendar = Calendar.getInstance();
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    private void setReportsBy() {
+        View mLayout = LayoutInflater.from(mContext).inflate(R.layout.view_range_picker, parent, false);
 
-        String defaultDate = sdf.format(calendar.getTime());
-        Date date = sdf.parse(defaultDate);
-        calendar.setTime(date);
+        RecyclerView recyclerView = mLayout.findViewById(R.id.recyclerReports);
+        CardView mCardReports = mLayout.findViewById(R.id.cardReports);
+        recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
+        recyclerView.setHasFixedSize(true);
+        mCardReports.setBackgroundResource(R.drawable.ic_tooltip);
 
-        endDate = sdf.format(calendar.getTime());
+        popupWindow = new PopupWindow(mContext);
+        popupWindow.setContentView(mLayout);
+        popupWindow.setFocusable(true);
 
-        tvToday.setOnClickListener(view -> {
-            startDate = Utils.getDateByRange(0);
-            getReports(startDate, endDate);
-            popupWindow.dismiss();
-        });
+        popupWindow.setBackgroundDrawable(new BitmapDrawable());
 
-        tvYesterday.setOnClickListener(view -> {
-            startDate = Utils.getDateByRange(1);
-            getReports(startDate, endDate);
-            popupWindow.dismiss();
-        });
+        reportsDateAdapter = new ReportsDateAdapter(mContext, popupWindow);
+        recyclerView.setAdapter(reportsDateAdapter);
 
-        tvLastWeek.setOnClickListener(view -> {
-            startDate = Utils.getDateByRange(6);
-            getReports(startDate, endDate);
-            popupWindow.dismiss();
-        });
-
-        tvLast30Days.setOnClickListener(view -> {
-            startDate = Utils.getDaysAgo(-30);
-            getReports(startDate, endDate);
-            popupWindow.dismiss();
-        });
-
-        tvThisMonth.setOnClickListener(view -> {
-            try {
-                startDate = Utils.getFirstDateOfMonth();
-                endDate = Utils.getLastDateOfMonth();
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
-            getReports(startDate, endDate);
-            popupWindow.dismiss();
-        });
-
-        tvPreviousMonth.setOnClickListener(view -> {
-            startDate = Utils.getFirstDateOfPreviousMonth();
-            endDate = Utils.getLastDateOfPreviousMonth();
-            getReports(startDate, endDate);
-            popupWindow.dismiss();
-        });
-    }
-
-    private Point getPointOfView(View view) {
-        int[] location = new int[2];
-        view.getLocationInWindow(location);
-        return new Point(location[0], location[1]);
+        reportsDateAdapter.setOnDataChangeListener(this::getReports);
     }
 
     @Override
@@ -226,5 +182,7 @@ public class ReportsFragment extends AppBaseFragment{
         super.onDestroy();
 
         unbinder.unbind();
+        mActivity.hideProgressBar();
+        compositeDisposable.dispose();
     }
 }

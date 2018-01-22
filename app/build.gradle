@@ -50,6 +50,7 @@ dependencies {
     implementation 'com.google.firebase:firebase-messaging:11.8.0'
     implementation 'ch.acra:acra:4.9.2'
     implementation 'com.nhaarman.supertooltips:library:3.0.0'
+    implementation('com.lsjwzh:materialloadingprogressbar:0.5.8-RELEASE')
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'

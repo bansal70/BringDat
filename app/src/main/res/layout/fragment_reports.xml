@@ -29,17 +29,19 @@
                 android:textSize="@dimen/_15sdp" />
 
             <android.support.v7.widget.CardView
+                android:id="@+id/cardDate"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="@dimen/_5sdp"
                 app:cardUseCompatPadding="true"
                 app:cardElevation="@dimen/_5sdp">
 
-                <TextView
+                <android.support.v7.widget.AppCompatTextView
                     android:id="@+id/tvDateRange"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="center|start"
+                    app:autoSizeTextType="uniform"
                     android:background="?selectableItemBackgroundBorderless"
                     android:foreground="?selectableItemBackgroundBorderless"
                     android:drawableLeft="@drawable/date_and_time"

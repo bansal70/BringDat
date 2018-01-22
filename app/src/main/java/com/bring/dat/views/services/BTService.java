@@ -18,8 +18,6 @@ import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Utils;
 
-import timber.log.Timber;
-
 public class BTService  extends Service {
 
     public static BluetoothService mService;
@@ -123,7 +121,7 @@ public class BTService  extends Service {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 switch (state) {
                     case BluetoothAdapter.STATE_OFF:
-                        setBluetooth();
+                        //setBluetooth();
                         break;
                     case BluetoothAdapter.STATE_TURNING_OFF:
                         break;
@@ -142,7 +140,6 @@ public class BTService  extends Service {
         super.onDestroy();
 
         unregisterReceiver(mReceiver);
-        Timber.e("Service destroyed");
     }
 
 }

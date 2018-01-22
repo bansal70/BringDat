@@ -45,12 +45,6 @@ public class OrderDetailsActivity extends AppBaseActivity {
     @BindView(R.id.scrollView)
     ScrollView scrollView;
 
-   /* @BindView(R.id.btnSearch)
-    Button btnSearch;
-
-    @BindView(R.id.btnSend)
-    Button btnSend;*/
-
     @BindView(R.id.tvPersonName)
     TextView tvPersonName;
 
@@ -117,17 +111,8 @@ public class OrderDetailsActivity extends AppBaseActivity {
     @BindView(R.id.recyclerItems)
     RecyclerView recyclerItems;
 
-    @BindView(R.id.tipLL)
-    LinearLayout tipLL;
-
-    @BindView(R.id.discountLL)
-    LinearLayout discountLL;
-
     @BindView(R.id.llOrderTime)
     LinearLayout llOrderTime;
-
-    /* @BindView(R.id.txt_content)
-    TextView tvContent; */
 
     OrderDetails mOrderDetails = null;
 
@@ -167,16 +152,14 @@ public class OrderDetailsActivity extends AppBaseActivity {
         dismissDialog();
 
         if (mOrderDetails.success) {
-            String header = AppUtils.headerOrderReceipt(mOrderDetails);
-            // String msg = AppUtils.receiptDetails(mOrderDetails);
-            //tvContent.setText(header);
+            scrollView.setVisibility(View.VISIBLE);
+            llOrderTime.setVisibility(View.VISIBLE);
+
+            this.mOrderDetails = mOrderDetails;
+            setData(mOrderDetails);
+        } else {
+            showToast(mOrderDetails.msg);
         }
-
-        scrollView.setVisibility(View.VISIBLE);
-        llOrderTime.setVisibility(View.VISIBLE);
-
-        this.mOrderDetails = mOrderDetails;
-        setData(mOrderDetails);
     }
 
     private void setData(OrderDetails mOrderDetails) {
@@ -228,18 +211,6 @@ public class OrderDetailsActivity extends AppBaseActivity {
         recyclerItems.setLayoutManager(new LinearLayoutManager(mContext));
         recyclerItems.setAdapter(itemsAdapter);
     }
-
-   /* @OnClick(R.id.btnSearch)
-    public void searchBT() {
-        Intent serverIntent = new Intent(mContext, DeviceListActivity.class);
-        startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE);
-    }
-
-    @OnClick(R.id.btnSend)
-    public void printReceipt() {
-        if (isInternetActive())
-            PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
-    }*/
 
     @OnClick(R.id.btPrint)
     public void reprintReceipt() {

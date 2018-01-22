@@ -154,7 +154,7 @@ public class Utils {
         return phone.startsWith("0") && phone.length() == 10 || !phone.startsWith("0") && phone.length() == 9;
     }
 
-    public static void maxDatePicker(Context mContext, final TextView textView) {
+    public static void setDatePicker(Context mContext, final TextView textView) {
         final Calendar c = Calendar.getInstance();
         int mYear = c.get(Calendar.YEAR); // current year
         int mMonth = c.get(Calendar.MONTH); // current month
@@ -162,14 +162,13 @@ public class Utils {
         // date picker dialog
         DatePickerDialog.OnDateSetListener onDateSetListener = (view, year, monthOfYear, dayOfMonth) -> {
             // set day of month , month and year value in the edit text
-            String date = dayOfMonth + "/" + (monthOfYear + 1) + "/" + year;
+            String date = year + "-"+ (monthOfYear+1) + "-" + dayOfMonth;
             textView.setText(date);
-
         };
 
         DatePickerDialog dpDialog = new DatePickerDialog(mContext, onDateSetListener, mYear, mMonth, mDay);
-        DatePicker datePicker = dpDialog.getDatePicker();
-        datePicker.setMaxDate(c.getTimeInMillis());
+        //DatePicker datePicker = dpDialog.getDatePicker();
+        //datePicker.setMaxDate(c.getTimeInMillis());
         dpDialog.show();
     }
 
@@ -330,7 +329,7 @@ public class Utils {
         return sdf.format(c.getTime());
     }
 
-    public static String getFirstDateOfMonth() throws ParseException {
+    public static String getFirstDateOfMonth(){
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DATE, 1);
         calendar.set(Calendar.DATE ,calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
@@ -339,7 +338,7 @@ public class Utils {
         return sdf.format(calendar.getTime());
     }
 
-    public static String getLastDateOfMonth() throws ParseException {
+    public static String getLastDateOfMonth() {
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.DATE, 1);
         calendar.set(Calendar.DATE ,calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
@@ -348,9 +347,16 @@ public class Utils {
         return sdf.format(calendar.getTime());
     }
 
+    public static String getCurrentDate(){
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+
+        return sdf.format(calendar.getTime());
+    }
+
     public static String getDaysAgo(int days) {
         Calendar calendar = Calendar.getInstance();
-        calendar.add(Calendar.DAY_OF_MONTH, days);
+        calendar.add(Calendar.DATE, days);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
         return sdf.format(calendar.getTime());
@@ -378,6 +384,21 @@ public class Utils {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
 
         return sdf.format(aCalendar.getTime());
+    }
+
+    public static String getFullDate(String date) {
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+        Date newDate = null;
+        try {
+            newDate = sdf.parse(date);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+
+        sdf = new SimpleDateFormat("MMMM dd, yyyy", Locale.getDefault());
+        date = sdf.format(newDate);
+
+        return date;
     }
 
     public static  Point getPointOfView(View view) {

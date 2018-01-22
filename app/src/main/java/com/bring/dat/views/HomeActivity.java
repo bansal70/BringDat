@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -48,7 +49,7 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
 
        initNav();
 
-       goToFragment(new HomeFragment());
+        goToHomeFragment(new HomeFragment());
     }
 
     private void initNav() {
@@ -68,7 +69,7 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
         toggle.syncState();
 
         if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
-            navigationView.getMenu().findItem(R.id.nav_setting).setVisible(false);
+            //navigationView.getMenu().findItem(R.id.nav_setting).setVisible(false);
             navigationView.getMenu().findItem(R.id.nav_reports).setVisible(false);
         }
 
@@ -84,13 +85,9 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
                 tvToolbar.setText(R.string.prompt_home);
                 if (mFragment instanceof HomeFragment) {
                     break;
+                } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack("", FragmentManager.POP_BACK_STACK_INCLUSIVE);
                 }
-                else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                    getSupportFragmentManager().popBackStack();
-                }
-                /*else if (!(mFragment instanceof HomeFragment)) {
-                    goToFragment(new HomeFragment());
-                }*/
                 break;
 
             case R.id.nav_reports:
@@ -125,10 +122,11 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        boolean order = intent.getBooleanExtra("order", false);
+        goToHomeFragment(new HomeFragment());
 
-        String details = intent.getStringExtra("orderDetails");
-        goToFragment(new HomeFragment());
+        /*boolean order = intent.getBooleanExtra("order", false);
+
+        String details = intent.getStringExtra("orderDetails");*/
         /*OrderDetails mOrderDetails = new Gson().fromJson(details, OrderDetails.class);
         OrderDetails.Data data = mOrderDetails.data;
         Order mOrder = data.order.get(0);
@@ -159,15 +157,9 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
             }
         } else {
             if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                getSupportFragmentManager().popBackStack();
+                getSupportFragmentManager().popBackStack("", FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
         }
-
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        //compositeDisposable.dispose();
-    }
 }
