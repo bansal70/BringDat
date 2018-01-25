@@ -38,9 +38,12 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder>{
         float totalPrice = Float.parseFloat(mCart.qty) * mCart.price;
         //String price = mCart.qty + "*" + mCart.price + " = ";
         holder.tvItemPrice.setText(String.format("$%s", totalPrice));
-        if (mCart.toppingsName.isEmpty()) {
+        if (mCart.toppingsName.isEmpty() && mCart.description.isEmpty()) {
             holder.tvToppings.setVisibility(View.GONE);
         } else {
+            if (mCart.toppingsName.isEmpty()) {
+                holder.tvToppings.setText(mCart.description);
+            }
             if (!mCart.full.isEmpty()) {
                 holder.tvToppings.append(mCart.full + "\n");
             }
@@ -51,6 +54,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder>{
                 holder.tvToppings.append(mContext.getString(R.string.prompt_half_two) + " " + mCart.half2);
             }
         }
+
     }
 
     @Override

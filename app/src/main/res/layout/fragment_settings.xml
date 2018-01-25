@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/parentLL"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:visibility="gone"
     android:orientation="vertical">
 
     <LinearLayout
@@ -22,7 +24,7 @@
             android:textSize="@dimen/_13sdp" />
 
         <android.support.v7.widget.SwitchCompat
-            android:id="@+id/switchOnlineOrderingO"
+            android:id="@+id/switchOnlineOrdering"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"/>
@@ -55,12 +57,14 @@
                 android:textSize="@dimen/_13sdp" />
 
             <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchPrinting"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false"
                 android:layout_weight="1" />
 
         </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -73,6 +77,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/prompt_cod_orders"
+                android:clickable="false"
+                android:focusable="false"
                 android:textColor="@color/black"
                 android:textSize="@dimen/_13sdp" />
 
@@ -82,6 +88,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/prompt_prepaid_orders"
+                android:clickable="false"
+                android:focusable="false"
                 android:textColor="@color/black"
                 android:textSize="@dimen/_13sdp" />
 
@@ -97,7 +105,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:padding="@dimen/_10sdp">
 
         <TextView
             android:layout_width="match_parent"
@@ -105,24 +114,18 @@
             android:layout_gravity="start"
             android:text="@string/prompt_sounds"
             android:textColor="@color/black"
-            android:layout_marginLeft="@dimen/_10sdp"
-            android:layout_marginRight="@dimen/_10sdp"
-            android:layout_marginTop="@dimen/_10sdp"
             android:textSize="@dimen/_13sdp"
             android:textStyle="bold" />
 
-        <RadioGroup
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="@dimen/_10sdp">
-
-            <LinearLayout
+            <RadioGroup
+                android:id="@+id/mFirstGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp"
                 android:orientation="horizontal">
 
                 <RadioButton
+                    android:id="@+id/rbRinging"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start"
@@ -130,20 +133,24 @@
                     android:text="@string/notification_phone_ringing" />
 
                 <RadioButton
+                    android:id="@+id/rbBuzzer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
                     android:layout_weight="1"
                     android:text="@string/notification_buzzer" />
 
-            </LinearLayout>
+            </RadioGroup>
 
-            <LinearLayout
+            <RadioGroup
+                android:id="@+id/mSecondGroup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_5sdp"
                 android:orientation="horizontal">
 
                 <RadioButton
+                    android:id="@+id/rbExplore"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="start"
@@ -151,15 +158,15 @@
                     android:text="@string/notification_explo" />
 
                 <RadioButton
+                    android:id="@+id/rbClock"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
                     android:layout_weight="1"
                     android:text="@string/notification_old_school_clock" />
 
-            </LinearLayout>
+            </RadioGroup>
 
-        </RadioGroup>
 
     </LinearLayout>
 

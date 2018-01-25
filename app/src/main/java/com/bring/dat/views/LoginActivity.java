@@ -74,6 +74,11 @@ public class LoginActivity extends AppBaseActivity {
             BDPreferences.putString(mContext, Constants.KEY_EMAIL, mData.restaurantEmail);
             BDPreferences.putString(mContext, Constants.KEY_TOKEN, mData.token);
 
+            BDPreferences.putString(mContext, Constants.KEY_ONLINE_ORDER, mData.onlineOrder);
+            BDPreferences.putString(mContext, Constants.KEY_PRINTING_TYPE, mData.printingType);
+            BDPreferences.putString(mContext, Constants.KEY_PRINTING_OPTION, mData.printingOption);
+            BDPreferences.putString(mContext, Constants.KEY_SOUND_TYPE, mData.soundType);
+
             showToast(getString(R.string.success_login));
             Utils.gotoNextActivityAnimation(mContext, HomeActivity.class);
             finish();

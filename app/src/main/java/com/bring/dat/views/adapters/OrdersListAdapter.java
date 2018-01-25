@@ -80,7 +80,7 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
 
         if (mOrderDetails.order_print_status.equals("0")) {
             holder.btReprint.setText(mContext.getString(R.string.prompt_print));
-            holder.btReprint.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorYellow));
+            holder.btReprint.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorDarkGreen));
         } else {
             holder.btReprint.setText(mContext.getString(R.string.prompt_reprint));
             holder.btReprint.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorRed));

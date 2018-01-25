@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import com.bring.dat.R;
@@ -21,6 +22,7 @@ import com.bring.dat.model.PrintReceipt;
 import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
+import com.bring.dat.model.pojo.Settings;
 import com.bring.dat.views.AppBaseActivity;
 import com.bring.dat.views.OrderDetailsActivity;
 
@@ -37,11 +39,27 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
     private Context mContext;
     private List<Order> mListOrderDetails;
     private AppBaseActivity mActivity;
+    private Dialog dialogOrder, dialogTime;
+    private String mOrderId = "", orderStatus, mOrderTime;
+
+    @BindView(R.id.btPending)
+    Button btPending;
+
+    @BindView(R.id.btWorkingTime)
+    Button btWorkingTime;
+
+    @BindView(R.id.tvOrderCurrentStatus)
+    TextView tvOrderCurrentStatus;
+
+    private int mPosition;
 
     public HomeAdapter(Context mContext, List<Order> mListOrderDetails) {
         this.mContext = mContext;
         this.mListOrderDetails = mListOrderDetails;
         mActivity = (AppBaseActivity) mContext;
+
+        dialogOrder = Utils.createDialog(mContext, R.layout.dialog_order_status);
+        ButterKnife.bind(this, dialogOrder);
     }
 
     @Override
@@ -52,10 +70,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
 
     @Override
     public void onBindViewHolder(HomeAdapter.ViewHolder holder, int position) {
-        if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
-            holder.btChangeStatus.setVisibility(View.GONE);
-        }
-
         Order mOrder = mListOrderDetails.get(position);
         holder.tvOrderTime.setText(String.format("%s", mOrder.orderdate));
         holder.tvPersonName.setText(String.format("%s %s", mOrder.customername, mOrder.customerlastname));
@@ -70,6 +84,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
                 ContextCompat.getColor(mContext, R.color.colorRed) :
                 ContextCompat.getColor(mContext, R.color.colorGreen);
 
+        if (mOrder.status.contains("cancel") || mOrder.status.contains("decline") || mOrder.status.contains("complete")) {
+            holder.btChangeStatus.setVisibility(View.GONE);
+        } else {
+            holder.btChangeStatus.setVisibility(View.VISIBLE);
+        }
+
         String mOrderStatus = mOrder.status.substring(0, 1).toUpperCase() + mOrder.status.substring(1);
         holder.tvOrderStatus.setText(mOrderStatus);
         holder.tvOrderStatus.setTextColor(color);
@@ -82,6 +102,40 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         } else {
             holder.btPrint.setText(mContext.getString(R.string.prompt_reprint));
             holder.btPrint.setBackgroundResource(R.drawable.shape_rounded_red);
+        }
+
+        if (BDPreferences.readString(mContext, Constants.KEY_PRINTING_OPTION).equals("1")) {
+            switch (BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE)) {
+                case Constants.PRINTING_PREPAID:
+                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID)) {
+                        holder.btPrint.setVisibility(View.VISIBLE);
+                    } else {
+                        holder.btPrint.setVisibility(View.GONE);
+                    }
+                    break;
+
+                case Constants.PRINTING_COD:
+                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
+                        holder.btPrint.setVisibility(View.VISIBLE);
+                    } else {
+                        holder.btPrint.setVisibility(View.GONE);
+                    }
+                    break;
+
+                case Constants.PRINTING_BOTH:
+                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
+                        holder.btPrint.setVisibility(View.VISIBLE);
+                    } else {
+                        holder.btPrint.setVisibility(View.GONE);
+                    }
+                    break;
+            }
+        } else {
+            holder.btPrint.setVisibility(View.GONE);
+        }
+
+        if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
+            holder.btChangeStatus.setVisibility(View.GONE);
         }
     }
 
@@ -144,6 +198,23 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
             if (mActivity.isInternetActive())
                 alertPrint(getAdapterPosition());
         }
+
+        @OnClick(R.id.btChangeStatus)
+        public void changeOrderStatus() {
+            Order mOrder = mListOrderDetails.get(getAdapterPosition());
+            mOrderId = mOrder.orderid;
+            mPosition = getAdapterPosition();
+
+            if (mOrder.status.contains("pending")) {
+                btWorkingTime.setVisibility(View.VISIBLE);
+                btPending.setVisibility(View.GONE);
+            } else {
+                btWorkingTime.setVisibility(View.GONE);
+                btPending.setVisibility(View.VISIBLE);
+            }
+            tvOrderCurrentStatus.setText(mOrder.status);
+            dialogOrder.show();
+        }
     }
 
     private void alertPrint(int position) {
@@ -186,4 +257,119 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
             PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
         }
     }
+
+    @OnClick(R.id.btPending)
+    public void makeOrderPending() {
+        orderStatus = "1"; // pending order
+        mOrderTime = "";
+        updateOrder();
+    }
+
+    @OnClick(R.id.btWorkingTime)
+    public void changeOrderTime() {
+        orderStatus = "2"; // processing order
+        updateTime();
+    }
+
+    @OnClick(R.id.btComplete)
+    public void completeOrder() {
+        orderStatus = "3"; // completed order
+        mOrderTime = "";
+        updateOrder();
+    }
+
+    @OnClick(R.id.btCancel)
+    public void cancelOrder() {
+        orderStatus = "4"; // canceled order
+        mOrderTime = "";
+        updateOrder();
+    }
+
+    private void updateTime(int time) {
+        orderStatus = "2"; // processing order
+        mOrderTime = String.valueOf(time);
+        updateOrder();
+        dialogOrder.dismiss();
+        dialogTime.dismiss();
+    }
+
+    @OnClick(R.id.fabCancel)
+    public void cancelDialog() {
+        dialogOrder.dismiss();
+    }
+
+    private void updateTime() {
+        mOrderTime = "";
+        dialogTime = Utils.createDialog(mContext, R.layout.dialog_working_time);
+        EditText editTime = dialogTime.findViewById(R.id.editTime);
+
+        dialogTime.findViewById(R.id.btApply).setOnClickListener(view -> {
+            mOrderTime = editTime.getText().toString().trim();
+            if (mOrderTime.isEmpty()) {
+                Utils.showToast(mContext, mContext.getString(R.string.error_empty_time));
+                return;
+            }
+            dialogTime.dismiss();
+            orderStatus = "2"; // processing order
+            updateOrder();
+            dialogOrder.dismiss();
+        });
+
+        dialogTime.findViewById(R.id.bt10min).setOnClickListener(view -> updateTime(10));
+        dialogTime.findViewById(R.id.bt20min).setOnClickListener(view -> updateTime(20));
+        dialogTime.findViewById(R.id.bt30min).setOnClickListener(view -> updateTime(30));
+        dialogTime.findViewById(R.id.bt15min).setOnClickListener(view -> updateTime(15));
+        dialogTime.findViewById(R.id.bt45min).setOnClickListener(view -> updateTime(45));
+        dialogTime.findViewById(R.id.bt60min).setOnClickListener(view -> updateTime(60));
+
+        dialogTime.findViewById(R.id.btCancel).setOnClickListener(view -> dialogTime.dismiss());
+
+        dialogTime.show();
+    }
+
+    private void updateOrder() {
+        mActivity.showDialog();
+        String restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
+        String token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
+
+        mActivity.apiService
+                .changeOrderStatus(Operations.updateOrderParams(restId, mOrderId, orderStatus, mOrderTime, token))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorResumeNext(throwable -> {
+                    mActivity.serverError();
+                })
+                .doOnNext(this::setOrderStatus)
+                .doOnError(mActivity::serverError)
+                .subscribe();
+
+        dialogOrder.dismiss();
+    }
+
+    private void setOrderStatus(Settings mSettings) {
+        mActivity.dismissDialog();
+        if (!mSettings.success) {
+            mActivity.showToast(mSettings.msg);
+            return;
+        }
+
+        Order mOrder = mListOrderDetails.get(mPosition);
+        switch (orderStatus) {
+            case "1":
+                mOrder.status = "pending";
+                break;
+            case "2":
+                mOrder.status = "processing";
+                break;
+            case "3":
+                mOrder.status = "completed";
+                break;
+            case "4":
+                mOrder.status = "canceled";
+                break;
+        }
+
+        notifyItemChanged(mPosition);
+    }
+
 }

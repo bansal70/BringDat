@@ -16,7 +16,27 @@ public class Constants {
     public static final String KEY_RESTAURANT_ID = "restaurantID";
     public static final String KEY_BT_ADDRESS = "BT_ADDRESS";
     public static final String KEY_LOGIN_TYPE = "login_type";
+    public static final String KEY_ONLINE_ORDER = "online_order";
+    public static final String KEY_PRINTING_TYPE = "printing_type";
+    public static final String KEY_PRINTING_OPTION = "printing_option";
+    public static final String KEY_SOUND_TYPE = "sound_type";
 
     public static final String LOGIN_ADMIN = "admin";
     public static final String LOGIN_LOGGER = "logger";
+
+    public static final String SOUND_RINGING = "1";
+    public static final String SOUND_BUZZER = "2";
+    public static final String SOUND_EXPLO = "3";
+    public static final String SOUND_OLD_SCHOOL = "4";
+
+    public static final String PRINTING_DISABLE = "0";
+    public static final String PRINTING_COD = "1";
+    public static final String PRINTING_PREPAID = "2";
+    public static final String PRINTING_BOTH = "3";
+    public static final String PRINTING_ON = "4";
+    public static final String PRINTING_OFF = "5";
+
+    public static final String PAYMENT_COD = "COD";
+    public static final String PAYMENT_PREPAID = "PREPAID";
+
 }

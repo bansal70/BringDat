@@ -18,6 +18,14 @@ public class LoginResponse {
         public String restaurantId;
         @SerializedName("restaurant_email")
         public String restaurantEmail;
+        @SerializedName("menu_only_merchant_flag")
+        public String onlineOrder;
+        @SerializedName("printing_option")
+        public String printingOption;
+        @SerializedName("printing_payment_methods")
+        public String printingType;
+        @SerializedName("sound_type")
+        public String soundType;
         @SerializedName("token")
         public String token;
     }

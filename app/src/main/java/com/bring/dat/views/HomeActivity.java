@@ -7,6 +7,7 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
@@ -20,6 +21,7 @@ import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Utils;
+import com.bring.dat.views.fragments.HistoryFragment;
 import com.bring.dat.views.fragments.HomeFragment;
 import com.bring.dat.views.fragments.ReportsFragment;
 import com.bring.dat.views.fragments.SettingsFragment;
@@ -47,13 +49,16 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
         setContentView(R.layout.activity_home);
         ButterKnife.bind(this);
 
-       initNav();
+        initNav();
 
-        goToHomeFragment(new HomeFragment());
+        if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER))
+            goToHomeFragment(new HistoryFragment());
+        else
+            goToHomeFragment(new HomeFragment());
     }
 
     private void initNav() {
-        tvToolbar.setText(R.string.prompt_home);
+        //tvToolbar.setText(R.string.prompt_home);
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,
                 toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
             public void onDrawerClosed(View view) {
@@ -69,8 +74,18 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
         toggle.syncState();
 
         if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
-            //navigationView.getMenu().findItem(R.id.nav_setting).setVisible(false);
+            navigationView.getMenu().findItem(R.id.nav_home).setVisible(false);
+            navigationView.getMenu().findItem(R.id.nav_setting).setVisible(false);
             navigationView.getMenu().findItem(R.id.nav_reports).setVisible(false);
+            navigationView.getMenu().findItem(R.id.nav_history).setTitle(R.string.prompt_home);
+            tvToolbar.setText(getString(R.string.prompt_logger));
+            navigationView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
+            toolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
+        } else {
+            navigationView.getMenu().findItem(R.id.nav_switch).setVisible(false);
+            tvToolbar.setText(getString(R.string.prompt_admin));
+            navigationView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorAccent));
+            toolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorAccent));
         }
 
         navigationView.setNavigationItemSelectedListener(this);
@@ -82,11 +97,31 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
         int id = item.getItemId();
         switch (id) {
             case R.id.nav_home:
-                tvToolbar.setText(R.string.prompt_home);
+                if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
+                    tvToolbar.setText(getString(R.string.prompt_logger));
+                } else {
+                    tvToolbar.setText(getString(R.string.prompt_admin));
+                }
+
                 if (mFragment instanceof HomeFragment) {
                     break;
-                } else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                } else {
+                    goToHomeFragment(new HomeFragment());
+                }
+                /*else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                     getSupportFragmentManager().popBackStack("", FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                }*/
+                break;
+
+            case R.id.nav_history:
+                if (mFragment instanceof HistoryFragment) {
+                    break;
+                } else {
+                    if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER))
+                        tvToolbar.setText(getString(R.string.prompt_home));
+                    else
+                        tvToolbar.setText(getString(R.string.prompt_history));
+                    goToFragment(new HistoryFragment());
                 }
                 break;
 
@@ -108,6 +143,19 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
                 }
                 break;
 
+            case R.id.nav_switch:
+                if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
+                    BDPreferences.putString(mContext, Constants.KEY_LOGIN_TYPE, Constants.LOGIN_ADMIN);
+                } else {
+                    BDPreferences.putString(mContext, Constants.KEY_LOGIN_TYPE, Constants.LOGIN_LOGGER);
+                }
+
+                Intent intent = new Intent(mContext, HomeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+
+                break;
+
             case R.id.nav_logout:
                 AppUtils.logoutAlert(this);
                 break;
@@ -122,7 +170,7 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        goToHomeFragment(new HomeFragment());
+        goToHomeFragment(new HistoryFragment());
 
         /*boolean order = intent.getBooleanExtra("order", false);
 
@@ -142,23 +190,32 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
         }*/
     }
 
-    private int count = 0;
-
     @Override
     public void onBackPressed() {
         Fragment mFragment = getSupportFragmentManager().findFragmentById(R.id.fragment_container);
-        if (mFragment instanceof HomeFragment) {
-            new Handler().postDelayed(() -> count = 0, 2000);
-            if (count == 0) {
-                showToast(getString(R.string.prompt_back_again_exit));
-                count++;
-            } else if (count == 1) {
-                super.onBackPressed();
+        if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
+            if (mFragment instanceof HistoryFragment) {
+                exitApp();
             }
+        }
+        else if (mFragment instanceof HomeFragment) {
+            exitApp();
         } else {
             if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
                 getSupportFragmentManager().popBackStack("", FragmentManager.POP_BACK_STACK_INCLUSIVE);
             }
+        }
+    }
+
+    private int count = 0;
+
+    private void exitApp() {
+        new Handler().postDelayed(() -> count = 0, 2000);
+        if (count == 0) {
+            showToast(getString(R.string.prompt_back_again_exit));
+            count++;
+        } else if (count == 1) {
+            super.onBackPressed();
         }
     }
 

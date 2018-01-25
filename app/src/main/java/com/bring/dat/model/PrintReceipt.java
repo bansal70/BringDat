@@ -29,7 +29,6 @@ public class PrintReceipt {
 
     private static void printLeft(String txt) {
         BluetoothService mService = BTService.mService;
-        mService = BTService.mService;
         byte[] format = new byte[]{0x1B, 'a', 0x00};
         mService.write(format);
         mService.sendMessage(txt,"GBK");
@@ -37,7 +36,6 @@ public class PrintReceipt {
 
     private static void printCenter(String txt) {
         BluetoothService mService = BTService.mService;
-        mService = BTService.mService;
         byte[] format = new byte[]{0x1B, 'a', 0x01};
         mService.write(format);
         mService.sendMessage(txt,"GBK");
@@ -45,7 +43,6 @@ public class PrintReceipt {
 
     private static void printRight(String txt) {
         BluetoothService mService = BTService.mService;
-        mService = BTService.mService;
         byte[] format = new byte[]{0x1B, 'a', 0x02};
         mService.write(format);
         mService.sendMessage(txt,"GBK");
@@ -109,70 +106,82 @@ public class PrintReceipt {
         msg = mOrder.customercellphone + BREAK + DIVIDER_DOUBLE;
         writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
 
-        msg = "Qty";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
-
-        msg = SPACE4 + "Item";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        msg = "Qty" + SPACE4 + "Item";
+        printLeft(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
         msg = SPACE5 + "Price" + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        printRight(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         for (int i = 0; i < mCartList.size(); i++) {
             Cart mCart = mCartList.get(i);
-            msg = " " + mCart.qty;
-            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
-
-            msg =  "   " + mCart.item;
-            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+            msg = " " + mCart.qty + "   " + mCart.item;
+            printLeft(msg);
+            //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
             msg = Constants.CURRENCY + mCart.price + BREAK;
-            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+            printRight(msg);
+            //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
         }
 
         msg = BREAK + "Subtotal:";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        printLeft(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
         msg = SPACE5 + Constants.CURRENCY + mOrder.ordersubtotal + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        printRight(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Tax(" + mOrder.taxvalue + "%):";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        printLeft(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
         msg = SPACE5 + Constants.CURRENCY + mOrder.taxamount  + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        printRight(msg);
+        // writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Delivery Charge:";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        printLeft(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
         msg = SPACE5 + Constants.CURRENCY + mOrder.deliveryamount + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        printRight(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Convenience Fee:";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        printLeft(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
         msg = SPACE5 + Constants.CURRENCY + mOrder.convenienceFee + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        printRight(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         if (!mOrder.siteDiscountAmount.isEmpty() || !mOrder.siteDiscountAmount.equals("0")) {
             msg = "Discount(" + mOrder.siteDiscountPercent + "%):";
-            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+            printLeft(msg);
+            //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
             msg = SPACE5 + Constants.CURRENCY + mOrder.siteDiscountAmount + BREAK;
-            writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+            printRight(msg);
+            // writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
         }
 
         msg = "Tip:";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
+        printLeft(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
         msg = SPACE5 + Constants.CURRENCY + mOrder.tipamount + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
+        printRight(msg);
+        // writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 
         msg = "Total:";
-        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.leftAlign());
+        printLeft(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.leftAlign());
 
         msg = SPACE5 + Constants.CURRENCY + mOrder.ordertotalprice + BREAK + DIVIDER_DOUBLE;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.rightAlign());
+        printRight(msg);
+        //writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.rightAlign());
 
         msg = BREAK + BREAK + BREAK + mOrder.paymentType + BREAK + BREAK + BREAK + BREAK + DIVIDER_DOUBLE + BREAK + BREAK + BREAK;
         writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
@@ -183,7 +192,7 @@ public class PrintReceipt {
 
     private static void receiptPrinted(Context mContext, String orderID) {
         ApiService apiService = APIClient.getClient().create(ApiService.class);
-        String token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
+         String token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
 
         apiService.getReceipt(Operations.receiptPrintParams(orderID, token))
                 .subscribeOn(Schedulers.io())

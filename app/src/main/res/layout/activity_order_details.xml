@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -11,6 +11,8 @@
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_below="@+id/toolbar"
+        android:layout_above="@+id/actionLL"
         android:visibility="gone">
 
         <LinearLayout
@@ -18,7 +20,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <include layout="@layout/view_order_home"/>
+            <include layout="@layout/content_order_details"/>
 
             <android.support.v7.widget.RecyclerView
                 android:id="@+id/recyclerItems"
@@ -237,51 +239,78 @@
                 android:textColor="@color/text_color_work_order"
                 android:textSize="@dimen/_14sdp" />
 
-            <TextView
-                android:id="@+id/TVorderIns"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:id="@+id/cancelOrderLL"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginLeft="@dimen/_13sdp"
-                android:paddingBottom="@dimen/_13sdp"
-                android:visibility="gone"
-                android:textColor="@color/text_color_work_order"
-                android:layout_marginStart="@dimen/_13sdp" />
+                android:layout_margin="@dimen/_10sdp"
+                android:visibility="gone">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <Button
+                    android:id="@+id/btVoidSale"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    style="?buttonBarButtonStyle"
                     android:visibility="gone"
-                    android:layout_gravity="bottom">
+                    android:background="@drawable/shape_button_orange_rounded"
+                    android:text="@string/prompt_void_sale"
+                    android:textColor="@color/White"
+                    android:textSize="@dimen/_13sdp"
+                    android:textStyle="bold" />
 
-                    <Button
-                        android:id="@+id/btPrint"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        style="?buttonBarButtonStyle"
-                        android:background="@color/orange"
-                        android:text="@string/prompt_print"
-                        android:textColor="@color/White"
-                        android:textSize="@dimen/_13sdp"
-                        android:textStyle="bold" />
+                <Button
+                    android:id="@+id/btAdjust"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    style="?buttonBarButtonStyle"
+                    android:visibility="gone"
+                    android:layout_marginLeft="@dimen/_10sdp"
+                    android:layout_marginStart="@dimen/_10sdp"
+                    android:background="@drawable/shape_button_green_rounded"
+                    android:text="@string/prompt_adjust"
+                    android:textColor="@color/White"
+                    android:textSize="@dimen/_13sdp"
+                    android:textStyle="bold" />
 
-                    <Button
-                        android:id="@+id/btChangeStatus"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:visibility="gone"
-                        style="?buttonBarButtonStyle"
-                        android:background="@color/colorSkyBlue"
-                        android:text="@string/change_status"
-                        android:textColor="@color/White"
-                        android:textSize="@dimen/_13sdp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
+            </LinearLayout>
 
         </LinearLayout>
 
     </ScrollView>
 
-</LinearLayout>
+    <LinearLayout
+        android:id="@+id/actionLL"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_alignParentBottom="true">
+
+        <Button
+            android:id="@+id/btPrintOrder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="?buttonBarButtonStyle"
+            android:background="@color/orange"
+            android:text="@string/prompt_print"
+            android:textColor="@color/White"
+            android:textSize="@dimen/_13sdp"
+            android:textStyle="bold" />
+
+        <Button
+            android:id="@+id/btChangeOrderStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            style="?buttonBarButtonStyle"
+            android:background="@color/colorSkyBlue"
+            android:text="@string/change_status"
+            android:textColor="@color/White"
+            android:textSize="@dimen/_13sdp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -42,10 +42,12 @@
                     android:layout_height="wrap_content"
                     android:gravity="center|start"
                     app:autoSizeTextType="uniform"
+                    android:maxLines="1"
                     android:background="?selectableItemBackgroundBorderless"
-                    android:foreground="?selectableItemBackgroundBorderless"
                     android:drawableLeft="@drawable/date_and_time"
                     android:drawableStart="@drawable/date_and_time"
+                    android:drawableRight="@drawable/ic_arrow_drop_down"
+                    android:drawableEnd="@drawable/ic_arrow_drop_down"
                     android:drawablePadding="@dimen/_5sdp"
                     android:padding="@dimen/_10sdp"/>
 
@@ -273,7 +275,6 @@
                     android:layout_gravity="start"
                     android:layout_weight="1"
                     android:text="@string/prompt_canceled_orders"
-                    android:textAllCaps="true"
                     android:textColor="@color/black"
                     android:textSize="@dimen/_13sdp" />
 
@@ -304,7 +305,6 @@
                     android:layout_gravity="start"
                     android:layout_weight="1"
                     android:text="@string/prompt_total_orders"
-                    android:textAllCaps="true"
                     android:textColor="@color/black"
                     android:textSize="@dimen/_13sdp" />
 
@@ -326,6 +326,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@color/colorLightSky"
                 android:padding="@dimen/_10sdp">
 
                 <TextView
@@ -334,15 +335,17 @@
                     android:layout_gravity="start"
                     android:layout_weight="1"
                     android:text="@string/prompt_gross_total"
-                    android:textAllCaps="true"
+                    android:textStyle="bold"
                     android:textColor="@color/black"
-                    android:textSize="@dimen/_13sdp" />
+                    android:textSize="@dimen/_15sdp" />
 
                 <TextView
                     android:id="@+id/tvGrossTotal"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="end"
+                    android:textStyle="bold"
+                    android:textSize="@dimen/_15sdp"
                     android:textAllCaps="true"
                     android:textColor="@color/black" />
 

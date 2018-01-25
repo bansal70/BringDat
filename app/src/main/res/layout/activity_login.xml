@@ -54,6 +54,7 @@
                     android:background="@color/transparent"
                     android:textColor="@color/colorWhite"
                     android:textColorHint="@color/colorWhite"
+                    android:textCursorDrawable="@drawable/custom_edit_text_cursor"
                     android:hint="@string/hint_email_username"/>
 
             </LinearLayout>
@@ -104,6 +105,7 @@
                     android:background="@color/transparent"
                     android:textColor="@color/colorWhite"
                     android:textColorHint="@color/colorWhite"
+                    android:textCursorDrawable="@drawable/custom_edit_text_cursor"
                     android:hint="@string/hint_password"/>
 
             </LinearLayout>

@@ -11,6 +11,7 @@ import android.support.v4.app.NotificationCompat;
 import com.bring.dat.R;
 import com.bring.dat.model.network.APIClient;
 import com.bring.dat.model.network.ApiService;
+import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.views.HomeActivity;
 import com.google.firebase.messaging.FirebaseMessagingService;
@@ -57,7 +58,32 @@ public class NotificationController extends FirebaseMessagingService {
     }
 
     private void orderDetails(OrderDetails mOrderDetails) {
-        PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+        String printingOptions =  BDPreferences.readString(mContext, Constants.KEY_PRINTING_OPTION);
+        String printingType = BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE);
+
+        OrderDetails.Data data = mOrderDetails.data;
+        Order mOrder = data.order.get(0);
+
+        if (printingOptions.equals("1")) {
+            switch (printingType) {
+                case Constants.PRINTING_COD:
+                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
+                        PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+                    }
+                    break;
+
+                case Constants.PRINTING_PREPAID:
+                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID)) {
+                        PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+                    }
+                    break;
+
+                case Constants.PRINTING_BOTH:
+                    PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+                    break;
+            }
+        }
+
         startMain(mOrderDetails);
     }
 
@@ -78,8 +104,23 @@ public class NotificationController extends FirebaseMessagingService {
                 PendingIntent.FLAG_ONE_SHOT);
 
         //Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+        String soundType = BDPreferences.readString(mContext, Constants.KEY_SOUND_TYPE);
+        switch (soundType) {
+            case Constants.SOUND_RINGING:
+                soundType = "pending_alert";
+                break;
+            case Constants.SOUND_BUZZER:
+                soundType = "flurry";
+                break;
+            case Constants.SOUND_EXPLO:
+                soundType = "explo";
+                break;
+            case Constants.SOUND_OLD_SCHOOL:
+                soundType = "oldschoolclock";
+                break;
+        }
         Uri alarmSound = Uri.parse(ContentResolver.SCHEME_ANDROID_RESOURCE
-                + "://" + getPackageName() + "/raw/flurry");
+                + "://" + getPackageName() + "/raw/" + soundType);
 
         NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                 .setSmallIcon(R.mipmap.ic_bring_logo_round)

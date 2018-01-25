@@ -2,10 +2,11 @@
 <resources>
     <color name="colorPrimary">#111111</color>
     <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#FF5400</color>
+    <color name="colorAccent">#3bc0de</color>
     <color name="colorWhite">#FFFFFF</color>
     <color name="colorBlack">#000000</color>
     <color name="colorGreen">#07dd00</color>
+    <color name="colorDarkGreen">#67A81F</color>
     <color name="colorRed">#ff0000</color>
     <color name="colorGray">#8E8E8E</color>
     <color name="colorYellow">#ffe600</color>
@@ -16,11 +17,14 @@
 
     <color name="transparent">#00000058</color>
     <color name="colorSkyBlue">#3bc0de</color>
+    <color name="colorLightBlue">#089DC9</color>
+    <color name="colorLightSky">#D5EFF6</color>
     <color name="light_gradients_ap_color">#aaaaaa</color>
     <color name="light_black_color">#aaaaaa</color>
     <color name="text_color_work_order">#000000</color>
     <color name="colorPinkLight">#F8DFDE</color>
     <color name="colorLightWhite">#F2F2F2</color>
-    <color name="colorDarkRed">#D9534F</color>
+    <color name="colorDarkRed">#F1411F</color>
+    <color name="colorLightGray">#F9F9F9</color>
 
 </resources>

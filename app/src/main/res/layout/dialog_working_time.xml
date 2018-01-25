@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    app:cardCornerRadius="@dimen/_5sdp"
+    app:cardUseCompatPadding="true"
+    android:layout_gravity="center"
+    android:layout_margin="@dimen/_10sdp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:layout_gravity="center"
+        android:paddingTop="@dimen/_10sdp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingLeft="@dimen/_15sdp"
+            android:paddingRight="@dimen/_15sdp"
+            android:paddingStart="@dimen/_15sdp"
+            android:paddingEnd="@dimen/_15sdp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_order_ready_time"
+                android:textSize="@dimen/_15sdp"
+                android:gravity="center"
+                android:textColor="@color/colorBlack" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0.5dp"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:background="@color/black"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:padding="@dimen/_10sdp">
+
+                <Button
+                    android:id="@+id/bt10min"
+                    android:layout_width="@dimen/_100sdp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_10_min"
+                    android:textColor="@color/colorWhite"
+                    android:textSize="@dimen/_15sdp"
+                    android:textAllCaps="false"
+                    android:layout_alignParentLeft="true"
+                    style="?borderlessButtonStyle"
+                    android:foreground="?selectableItemBackground"
+                    android:background="@drawable/shape_button_green_rounded"
+                    android:layout_alignParentStart="true" />
+
+                <Button
+                    android:id="@+id/bt30min"
+                    android:layout_width="@dimen/_100sdp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_30_min"
+                    android:textColor="@color/colorWhite"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/_15sdp"
+                    android:layout_alignParentRight="true"
+                    style="?borderlessButtonStyle"
+                    android:foreground="?selectableItemBackground"
+                    android:background="@drawable/shape_button_green_rounded"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/_10sdp">
+
+                <Button
+                    android:id="@+id/bt15min"
+                    android:layout_width="@dimen/_100sdp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_15_min"
+                    android:textColor="@color/colorWhite"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/_15sdp"
+                    android:layout_alignParentLeft="true"
+                    style="?borderlessButtonStyle"
+                    android:foreground="?selectableItemBackground"
+                    android:background="@drawable/shape_button_green_rounded"
+                    android:layout_alignParentStart="true" />
+
+                <Button
+                    android:id="@+id/bt45min"
+                    android:layout_width="@dimen/_100sdp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_45_min"
+                    android:textColor="@color/colorWhite"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/_15sdp"
+                    android:layout_alignParentRight="true"
+                    style="?borderlessButtonStyle"
+                    android:foreground="?selectableItemBackground"
+                    android:background="@drawable/shape_button_green_rounded"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:padding="@dimen/_10sdp">
+
+                <Button
+                    android:id="@+id/bt20min"
+                    android:layout_width="@dimen/_100sdp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_20_min"
+                    android:textColor="@color/colorWhite"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/_15sdp"
+                    android:layout_alignParentLeft="true"
+                    style="?borderlessButtonStyle"
+                    android:foreground="?selectableItemBackground"
+                    android:background="@drawable/shape_button_green_rounded"
+                    android:layout_alignParentStart="true" />
+
+                <Button
+                    android:id="@+id/bt60min"
+                    android:layout_width="@dimen/_100sdp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/time_60_min"
+                    android:textColor="@color/colorWhite"
+                    android:textAllCaps="false"
+                    android:textSize="@dimen/_15sdp"
+                    android:layout_alignParentRight="true"
+                    style="?borderlessButtonStyle"
+                    android:foreground="?selectableItemBackground"
+                    android:background="@drawable/shape_button_green_rounded"
+                    android:layout_alignParentEnd="true" />
+
+            </RelativeLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_specify_time"
+                android:layout_marginTop="@dimen/_10sdp"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_15sdp"
+                android:layout_gravity="center"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_marginTop="@dimen/_20sdp">
+
+                <EditText
+                    android:id="@+id/editTime"
+                    android:layout_width="@dimen/_100sdp"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_minutes"
+                    android:inputType="number"
+                    android:gravity="center"
+                    android:drawablePadding="@dimen/_10sdp"
+                    android:padding="@dimen/_10sdp"
+                    android:background="@drawable/custom_edit_text_bg"
+                    android:foreground="?selectableItemBackground"/>
+
+                <View
+                    android:layout_width="@dimen/_20sdp"
+                    android:layout_height="@dimen/_1sdp"/>
+
+                <Button
+                    android:id="@+id/btApply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/prompt_enter"
+                    android:textColor="@color/colorWhite"
+                    style="?borderlessButtonStyle"
+                    android:foreground="?selectableItemBackground"
+                    android:background="@drawable/shape_button_green_rounded" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/_1sdp"
+            android:layout_marginTop="@dimen/_30sdp"
+            android:background="@color/colorGray"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_gravity="end">
+
+            <Button
+                android:id="@+id/btCancel"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_continue_without_update"
+                android:layout_gravity="end"
+                android:textAllCaps="true"
+                android:layout_weight="1"
+                android:textSize="@dimen/_13sdp"
+                android:background="@color/colorDarkRed"
+                android:foreground="?selectableItemBackground"
+                style="?android:attr/buttonBarButtonStyle"
+                android:textColor="@color/colorWhite"
+                android:padding="@dimen/_15sdp"/>
+
+            <View
+                android:layout_width="@dimen/_1sdp"
+                android:layout_height="match_parent"
+                android:background="@color/colorGray"/>
+
+            <Button
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:text="@string/prompt_apply"
+                android:layout_gravity="end"
+                android:textAllCaps="true"
+                android:layout_weight="1"
+                android:textSize="@dimen/_13sdp"
+                android:visibility="gone"
+                style="?android:attr/buttonBarButtonStyle"
+                android:textColor="@color/colorAccent"
+                android:padding="@dimen/_15sdp"/>
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</android.support.v7.widget.CardView>

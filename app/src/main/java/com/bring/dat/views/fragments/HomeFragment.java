@@ -1,12 +1,11 @@
 package com.bring.dat.views.fragments;
 
-import android.app.Dialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -20,28 +19,20 @@ import com.bring.dat.R;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Operations;
-import com.bring.dat.model.RecyclerPagination;
-import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrdersResponse;
 import com.bring.dat.views.adapters.HomeAdapter;
-import com.bring.dat.views.services.BTService;
+import com.bring.dat.views.adapters.NewOrdersAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import butterknife.Unbinder;
-import io.reactivex.Flowable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
-import io.reactivex.processors.PublishProcessor;
 import io.reactivex.schedulers.Schedulers;
-import retrofit2.HttpException;
-import retrofit2.Response;
-import timber.log.Timber;
 
 public class HomeFragment extends AppBaseFragment {
 
@@ -51,6 +42,9 @@ public class HomeFragment extends AppBaseFragment {
 
     @BindView(R.id.llHome)
     LinearLayout llHome;
+
+    @BindView(R.id.cardOrders)
+    CardView cardOrders;
 
     @BindView(R.id.recyclerOrders)
     RecyclerView mRecyclerOrders;
@@ -67,18 +61,19 @@ public class HomeFragment extends AppBaseFragment {
     @BindView(R.id.swipeToRefresh)
     SwipeRefreshLayout mSwipeRefreshLayout;
 
+    @BindView(R.id.tvNewOrders)
+    TextView tvNewOrders;
+
+    @BindView(R.id.tvWorkingOrders)
+    TextView tvWorkingOrders;
+
     SwipeRefreshLayout.OnRefreshListener onRefreshListener;
 
-    private List<Order> mOrdersList;
+    private List<Order> mPendingOrdersList, mWorkingOrdersList;
     private HomeAdapter mHomeAdapter;
-    private int page = 0;
+    private NewOrdersAdapter mNewOrderAdapter;
 
-    private PublishProcessor<Integer> pagination;
-    private CompositeDisposable compositeDisposable;
-    public boolean requestOnWay = false;
     String token, restId;
-
-    AlertDialog alert;
 
     @Nullable
     @Override
@@ -96,145 +91,115 @@ public class HomeFragment extends AppBaseFragment {
     private void initViews() {
         mRecyclerOrders.setLayoutManager(new LinearLayoutManager(mContext));
 
-        if (!mActivity.isServiceRunning(BTService.class)) {
+        /*if (!mActivity.isServiceRunning(BTService.class)) {
             Intent btIntent = new Intent(mContext, BTService.class);
             mActivity.startService(btIntent);
-        }
+        }*/
 
-        mOrdersList = new ArrayList<>();
+        cardOrders.setVisibility(BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER) ? View.GONE : View.VISIBLE);
+
+        mPendingOrdersList = new ArrayList<>();
+        mWorkingOrdersList = new ArrayList<>();
+
         mRecyclerOrders.setLayoutManager(new LinearLayoutManager(mContext));
-        mHomeAdapter = new HomeAdapter(mContext, mOrdersList);
-        mRecyclerOrders.setAdapter(mHomeAdapter);
+
+        mNewOrderAdapter = new NewOrdersAdapter(mContext, mPendingOrdersList);
+        mHomeAdapter = new HomeAdapter(mContext, mWorkingOrdersList);
+
+        mRecyclerOrders.setAdapter(mNewOrderAdapter);
 
         restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
         token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
 
-        pagination = PublishProcessor.create();
-        compositeDisposable = new CompositeDisposable();
+        getPendingOrders();
 
-        mRecyclerOrders.addOnScrollListener(new RecyclerPagination(mRecyclerOrders.getLayoutManager()) {
-            @Override
-            public void onLoadMore(int currentPage, int totalItemCount, View view) {
-                if (!requestOnWay) {
-                    if (mActivity.isInternetActive()) {
-                        pagination.onNext(page);
-                        mProgressBar.setVisibility(View.VISIBLE);
-                    } else {
-                        connectionAlert(false);
-                    }
-                }
-            }
-        });
-
-        fetchData();
-
-        onRefreshListener = () -> {
-            pagination = PublishProcessor.create();
-            compositeDisposable = new CompositeDisposable();
-            mOrdersList.clear();
-            mHomeAdapter.notifyDataSetChanged();
-            page = 0;
-            fetchData();
-        };
+        onRefreshListener = this::getPendingOrders;
 
         mSwipeRefreshLayout.setOnRefreshListener(onRefreshListener);
     }
 
-    private void connectionAlert(boolean isFirstTime) {
-        alert = Utils.createAlert(mActivity, getString(R.string.error_connection_down), getString(R.string.error_internet_disconnected));
 
-        alert.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.prompt_retry), (dialogInterface, i) -> {
-            if (isFirstTime) {
-                fetchData();
-            } else {
-                if (!mActivity.isInternetActive()) {
-                    connectionAlert(false);
-                    return;
-                }
-                pagination.onNext(page);
-                mProgressBar.setVisibility(View.VISIBLE);
-            }
-        });
-        alert.show();
-    }
-
-    private void setOrdersList(OrdersResponse mOrdersResponse) {
-        if (mOrdersResponse.success) {
-            llHome.setVisibility(View.VISIBLE);
-            OrdersResponse.Data mOrdersData = mOrdersResponse.data;
-            mOrdersList.addAll(mOrdersData.orderList);
-            mHomeAdapter.notifyDataSetChanged();
-
-            int mPendingOrders = 0;
-            if (!mOrdersResponse.totalPending.isEmpty()) {
-                mPendingOrders = Integer.parseInt(mOrdersResponse.totalPending);
-            }
-            if (!mOrdersResponse.totalWorking.isEmpty()) {
-                mPendingOrders += Integer.parseInt(mOrdersResponse.totalWorking);
-            }
-
-            tvPendingOrders.setText(String.valueOf(mPendingOrders));
-            tvCompletedOrders.setText(mOrdersResponse.totalCompleted);
-        } else if (page > 1){
-            showToast(getString(R.string.error_no_more_orders));
-        } else {
-            showToast(mOrdersResponse.msg);
-        }
-        requestOnWay = false;
-
-        mProgressBar.setVisibility(View.GONE);
-
-        //mActivity.dismissDialog();
-        mActivity.hideProgressBar();
-    }
-
-    private void fetchData() {
-        if (!mActivity.isInternetActive()) {
-            connectionAlert(true);
-            return;
-        }
-
-        //mActivity.showDialog();
+    private void getPendingOrders() {
         mActivity.showProgressBar();
-
-        Disposable disposable = pagination.onBackpressureDrop()
-                .doOnNext(page -> requestOnWay = true)
-                .concatMap(integer -> getOrders())
+        apiService.getNewOrders(Operations.newOrdersParams(restId, token))
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorResumeNext(throwable -> {
-                    responseError();
+                    mActivity.serverError();
                 })
-                .doOnNext(this::setOrdersList)
-                .doOnError(this::responseError)
+                .doOnNext(this::setPendingOrders)
+                .doOnError(mActivity::serverError)
                 .subscribe();
-
-        compositeDisposable.add(disposable);
-        pagination.onNext(page);
     }
 
-    private Flowable<OrdersResponse> getOrders() {
-        mSwipeRefreshLayout.setRefreshing(false);
-        return apiService.getOrders(Operations.ordersListParams(restId, page++, token))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
-    }
-
-    void responseError(Throwable throwable) {
-        mActivity.hideProgressBar();
-        showToast(getString(R.string.error_server));
-        mSwipeRefreshLayout.setRefreshing(false);
-        mProgressBar.setVisibility(View.GONE);
-        if (throwable instanceof HttpException) {
-            Response<?> response = ((HttpException) throwable).response();
-            Timber.e(response.message());
+    private void setPendingOrders(OrdersResponse mOrdersResponse) {
+        if (mOrdersResponse.success) {
+            mPendingOrdersList.clear();
+            //llHome.setVisibility(View.VISIBLE);
+            OrdersResponse.Data mOrdersData = mOrdersResponse.data;
+            mPendingOrdersList.addAll(mOrdersData.orderList);
+            mNewOrderAdapter.notifyDataSetChanged();
+            getWorkingOrders();
+        } else {
+            mActivity.hideProgressBar();
+            showToast(mOrdersResponse.msg);
+            mSwipeRefreshLayout.setRefreshing(false);
         }
+        //mActivity.dismissDialog();
     }
 
-    void responseError() {
-        mActivity.hideProgressBar();
-        showToast(getString(R.string.error_server));
+    private void getWorkingOrders() {
+        apiService.getWorkingOrders(Operations.workingOrdersParams(restId, token))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorResumeNext(throwable -> {
+                    mActivity.serverError();
+                })
+                .doOnNext(this::setWorkingOrders)
+                .doOnError(mActivity::serverError)
+                .subscribe();
+    }
+
+    private void setWorkingOrders(OrdersResponse mOrdersResponse) {
+        if (!mOrdersResponse.success) {
+            showToast(mOrdersResponse.msg);
+            return;
+        }
+        llHome.setVisibility(View.VISIBLE);
         mSwipeRefreshLayout.setRefreshing(false);
+        mWorkingOrdersList.clear();
+        OrdersResponse.Data mOrdersData = mOrdersResponse.data;
+        mWorkingOrdersList.addAll(mOrdersData.orderList);
+        mHomeAdapter.notifyDataSetChanged();
+
         mProgressBar.setVisibility(View.GONE);
+        mActivity.hideProgressBar();
+
+        tvPendingOrders.setText(String.valueOf(mPendingOrdersList.size()));
+        tvCompletedOrders.setText(String.valueOf(mWorkingOrdersList.size()));
+    }
+
+    @OnClick(R.id.tvNewOrders)
+    public void newOrders() {
+        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
+        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+
+        //mHomeAdapter = new HomeAdapter(mContext, mPendingOrdersList);
+        mRecyclerOrders.setAdapter(mNewOrderAdapter);
+    }
+
+    @OnClick(R.id.tvWorkingOrders)
+    public void workingOrders() {
+        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
+
+        //mHomeAdapter = new HomeAdapter(mContext, mWorkingOrdersList);
+        mRecyclerOrders.setAdapter(mHomeAdapter);
+
     }
 
     @Override
@@ -242,7 +207,5 @@ public class HomeFragment extends AppBaseFragment {
         super.onDestroy();
 
         unbinder.unbind();
-
-        compositeDisposable.dispose();
     }
 }
