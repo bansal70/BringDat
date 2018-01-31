@@ -51,7 +51,7 @@ public class AdjustSaleDialogFragment extends DialogBaseFragment{
     Order mOrder;
     AdjustReasons mAdjustReasons;
 
-    private OnVoidTransaction mOnVoidTransaction;
+    private OnAdjustTransaction mOnAdjustTransaction;
     private List<AdjustReasons.Option> listOptions = new ArrayList<>();
 
     @Nullable
@@ -84,11 +84,9 @@ public class AdjustSaleDialogFragment extends DialogBaseFragment{
     }
 
     private void setReasons(AdjustReasons mReasons) {
-        //mActivity.dismissDialog();
         if (mReasons.mSuccess) {
             List<AdjustReasons.Option> mOptions = mReasons.mOption;
             listOptions.addAll(mOptions);
-           // adjustSaleAdapter.notifyDataSetChanged();
         }
 
         setData();
@@ -117,7 +115,10 @@ public class AdjustSaleDialogFragment extends DialogBaseFragment{
     }
 
     @OnClick(R.id.btSubmit)
-    public void voidSale() {
+    public void adjustSale() {
+        if (!mActivity.isInternetActive()) {
+            return;
+        }
         String name = editName.getText().toString();
         String msg = editMessage.getText().toString();
         String restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
@@ -147,9 +148,9 @@ public class AdjustSaleDialogFragment extends DialogBaseFragment{
         showToast(mTransaction.msg);
 
         if (mTransaction.success) {
-            mOrder.applyAdjust = "Yes";
-            if (mOnVoidTransaction != null) {
-                mOnVoidTransaction.onVoidSale(mOrder);
+            mOrder.applyAdjust = "yes";
+            if (mOnAdjustTransaction != null) {
+                mOnAdjustTransaction.onAdjustSale(mOrder);
             }
             dismiss();
         }
@@ -157,7 +158,7 @@ public class AdjustSaleDialogFragment extends DialogBaseFragment{
 
     private boolean isValidData() {
         if (editAmount.getText().toString().trim().isEmpty()) {
-            showToast("Please enter the amount");
+            showToast(getString(R.string.error_empty_amount));
             return false;
         }
         if (editName.getText().toString().trim().isEmpty()) {
@@ -172,12 +173,12 @@ public class AdjustSaleDialogFragment extends DialogBaseFragment{
         return true;
     }
 
-    public interface OnVoidTransaction {
-        void onVoidSale(Order mOrder);
+    public interface OnAdjustTransaction {
+        void onAdjustSale(Order mOrder);
     }
 
-    public void setOnVoidSaleListener(OnVoidTransaction onVoidTransaction){
-        mOnVoidTransaction = onVoidTransaction;
+    public void setOnAdjustSaleListener(OnAdjustTransaction onAdjustTransaction){
+        mOnAdjustTransaction = onAdjustTransaction;
     }
 
     @OnClick(R.id.btCancel)

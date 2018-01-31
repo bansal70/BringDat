@@ -25,6 +25,7 @@ import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.model.pojo.Settings;
 import com.bring.dat.views.AppBaseActivity;
 import com.bring.dat.views.OrderDetailsActivity;
+import com.bring.dat.views.fragments.HomeFragment;
 
 import java.util.List;
 
@@ -78,6 +79,11 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         holder.tvOrderNumber.setText(mOrder.orderid);
         holder.tvAddress.setText(AppUtils.userAddress(mOrder));
         String mDeliveryType = mOrder.deliverytype.substring(0, 1).toUpperCase() + mOrder.deliverytype.substring(1);
+        if (mOrder.deliverytype.equalsIgnoreCase("delivery")) {
+            holder.tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_delivery, 0,0,0);
+        } else {
+            holder.tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_pickup, 0,0,0);
+        }
         holder.tvDeliveryType.setText(mDeliveryType);
 
         int color = mOrder.status.contains("cancel") || mOrder.status.contains("decline") ?
@@ -280,9 +286,15 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
 
     @OnClick(R.id.btCancel)
     public void cancelOrder() {
-        orderStatus = "4"; // canceled order
-        mOrderTime = "";
-        updateOrder();
+        AlertDialog alert = Utils.createAlert(mActivity, "", mContext.getString(R.string.alert_cancel_order));
+        alert.setButton(Dialog.BUTTON_POSITIVE, mContext.getString(android.R.string.yes),
+                (dialogInterface, i) -> {
+                    orderStatus = "4"; // canceled order
+                    mOrderTime = "";
+                    updateOrder();
+                });
+        alert.setButton(Dialog.BUTTON_NEGATIVE, mContext.getString(android.R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss());
+        alert.show();
     }
 
     private void updateTime(int time) {
@@ -328,6 +340,10 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
     }
 
     private void updateOrder() {
+        if (!mActivity.isInternetActive()) {
+            return;
+        }
+
         mActivity.showDialog();
         String restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
         String token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
@@ -370,6 +386,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         }
 
         notifyItemChanged(mPosition);
+        mActivity.goToFragment(new HomeFragment());
     }
 
 }

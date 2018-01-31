@@ -41,23 +41,25 @@ public class NotificationController extends FirebaseMessagingService {
         orderId = remoteMessage.getData().get("orderId");
         String token = BDPreferences.readString(getApplicationContext(), Constants.KEY_TOKEN);
 
-        if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
-            apiService = APIClient.getClient().create(ApiService.class);
-            apiService.getOrderDetails(Operations.ordersDetailsParams(orderId, token))
-                    .subscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread())
-                    .onErrorResumeNext(throwable -> {
-                        Timber.e("Server error");
-                    })
-                    .doOnNext(this::orderDetails)
-                    .doOnError(AppUtils::serverError)
-                    .subscribe();
-        }
+        //   if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
+        apiService = APIClient.getClient().create(ApiService.class);
+        apiService.getOrderDetails(Operations.ordersDetailsParams(orderId, token))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorResumeNext(throwable -> {
+                    Timber.e("Server error");
+                })
+                .doOnNext(this::orderDetails)
+                .doOnError(AppUtils::serverError)
+                .subscribe();
+        //   }
 
         sendNotification();
     }
 
     private void orderDetails(OrderDetails mOrderDetails) {
+        startMain(mOrderDetails);
+
         String printingOptions =  BDPreferences.readString(mContext, Constants.KEY_PRINTING_OPTION);
         String printingType = BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE);
 
@@ -83,8 +85,6 @@ public class NotificationController extends FirebaseMessagingService {
                     break;
             }
         }
-
-        startMain(mOrderDetails);
     }
 
     private void startMain(OrderDetails mOrderDetails) {
@@ -97,7 +97,13 @@ public class NotificationController extends FirebaseMessagingService {
 
     @SuppressWarnings("deprecation")
     private void sendNotification() {
-        Intent intent = new Intent(mContext, HomeActivity.class);
+        Intent intent;
+
+        if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER))
+            intent = new Intent(mContext, HomeActivity.class);
+        else
+            intent = new Intent();
+
         intent.putExtra("order", true);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent,

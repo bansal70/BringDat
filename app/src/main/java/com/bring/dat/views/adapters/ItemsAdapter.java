@@ -41,9 +41,7 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder>{
         if (mCart.toppingsName.isEmpty() && mCart.description.isEmpty()) {
             holder.tvToppings.setVisibility(View.GONE);
         } else {
-            if (mCart.toppingsName.isEmpty()) {
-                holder.tvToppings.setText(mCart.description);
-            }
+            holder.tvToppings.setText(mCart.toppingsName.isEmpty() ? mCart.description : mCart.toppingsName);
             if (!mCart.full.isEmpty()) {
                 holder.tvToppings.append(mCart.full + "\n");
             }
@@ -54,6 +52,8 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder>{
                 holder.tvToppings.append(mContext.getString(R.string.prompt_half_two) + " " + mCart.half2);
             }
         }
+
+        holder.tvSpecialInstructions.setText(mCart.specialinstruction);
 
     }
 
@@ -75,6 +75,9 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder>{
 
         @BindView(R.id.tvToppings)
         TextView tvToppings;
+
+        @BindView(R.id.tvSpecialInstructions)
+        TextView tvSpecialInstructions;
 
         private ViewHolder(View itemView) {
             super(itemView);

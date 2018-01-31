@@ -170,7 +170,11 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        goToHomeFragment(new HistoryFragment());
+        if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
+            goToHomeFragment(new HistoryFragment());
+        } else {
+            goToHomeFragment(new HomeFragment());
+        }
 
         /*boolean order = intent.getBooleanExtra("order", false);
 

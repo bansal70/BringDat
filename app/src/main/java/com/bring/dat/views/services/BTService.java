@@ -1,6 +1,5 @@
 package com.bring.dat.views.services;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -17,6 +16,10 @@ import com.bring.dat.R;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Utils;
+
+import java.lang.ref.WeakReference;
+
+import timber.log.Timber;
 
 public class BTService  extends Service {
 
@@ -43,7 +46,7 @@ public class BTService  extends Service {
     }
 
     public void checkBT() {
-        mService = new BluetoothService(this, mHandler);
+        mService = new BluetoothService(this, getHandler());
 
         if (!mService.isAvailable()) {
             Utils.showToast(mContext, getString(R.string.error_bluetooth_unavailable));
@@ -82,7 +85,7 @@ public class BTService  extends Service {
         }
     }
 
-    @SuppressLint("HandlerLeak")
+    /*@SuppressLint("HandlerLeak")
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -109,7 +112,53 @@ public class BTService  extends Service {
                     break;
             }
         }
-    };
+    };*/
+
+    public static class IncomingHandler extends Handler {
+        private final WeakReference<BTService> mService;
+
+        private IncomingHandler(BTService service) {
+            mService = new WeakReference<>(service);
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            BTService service = mService.get();
+            if (service != null) {
+                service.handleMessage(msg);
+            }
+        }
+    }
+
+    public void handleMessage(Message msg) {
+        switch (msg.what) {
+            case BluetoothService.MESSAGE_STATE_CHANGE:
+                switch (msg.arg1) {
+                    case BluetoothService.STATE_CONNECTED:
+                        Utils.showToast(mContext, getString(R.string.success_connection));
+                        break;
+                    case BluetoothService.STATE_CONNECTING:
+                        //     Timber.e("Bluetooth is connecting");
+                        break;
+                    case BluetoothService.STATE_LISTEN:
+                             Timber.e("Bluetooth state listen ");
+                    case BluetoothService.STATE_NONE:
+                             Timber.e("Bluetooth state none ");
+                        break;
+                }
+                break;
+            case BluetoothService.MESSAGE_CONNECTION_LOST:
+                connectBT();
+                break;
+            case BluetoothService.MESSAGE_UNABLE_CONNECT:
+                //connectBT();
+                break;
+        }
+    }
+
+    public Handler getHandler() {
+        return new IncomingHandler(this);
+    }
 
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override

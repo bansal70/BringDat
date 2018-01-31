@@ -14,7 +14,6 @@ import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
-import retrofit2.http.Query;
 import retrofit2.http.QueryMap;
 
 /*
@@ -62,8 +61,8 @@ public interface ApiService {
     @POST("webservices.php?action=voidTransaction")
     Observable<Transaction> voidTransaction(@QueryMap HashMap<String, String> mapParams);
 
-    @GET("webservices.php?action=getDialogOption")
-    Observable<AdjustReasons> getAdjustReasons(@Query("type") String type);
+    @GET("webservices.php?action=getDialogOption&type=adjust")
+    Observable<AdjustReasons> getAdjustReasons();
 
     @POST("webservices.php?action=adjustTransaction")
     Observable<Transaction> adjustTransaction(@QueryMap HashMap<String, String> mapParams);

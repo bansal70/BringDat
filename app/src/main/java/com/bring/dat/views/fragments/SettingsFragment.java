@@ -1,9 +1,11 @@
 package com.bring.dat.views.fragments;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +20,7 @@ import com.bring.dat.R;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Operations;
+import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Settings;
 import com.bring.dat.views.HomeActivity;
 
@@ -125,6 +128,10 @@ public class SettingsFragment extends AppBaseFragment{
             btChangeAlias.setText(getString(R.string.prompt_switch_logger));
         }
 
+        if (!mActivity.isInternetActive()) {
+            connectionAlert();
+            return;
+        }
         getSettings();
     }
 
@@ -182,6 +189,7 @@ public class SettingsFragment extends AppBaseFragment{
         setSoundListeners();
     }
 
+
     @OnCheckedChanged(R.id.switchOnlineOrdering)
     public void onlineOrder(boolean checked) {
         if (checked) {
@@ -194,6 +202,9 @@ public class SettingsFragment extends AppBaseFragment{
     }
 
     private void updateOnlineOrder() {
+        if (!mActivity.isInternetActive()) {
+            return;
+        }
         mActivity.showDialog();
         apiService.updateOrderStatus(Operations.orderStatusParams(restId, onlineOrder, token))
                 .subscribeOn(Schedulers.io())
@@ -217,6 +228,10 @@ public class SettingsFragment extends AppBaseFragment{
 
     @OnTouch(R.id.switchPrinting)
     public boolean printingStatus() {
+        if (!mActivity.isInternetActive()) {
+            return false;
+        }
+
         printingOptions = switchPrinting.isChecked() ? Constants.PRINTING_OFF : Constants.PRINTING_ON;
 
         updatePrintingStatus(printingOptions);
@@ -226,6 +241,10 @@ public class SettingsFragment extends AppBaseFragment{
 
     @OnTouch(R.id.cbCODOrder)
     boolean codOrders() {
+        if (!mActivity.isInternetActive()) {
+            return false;
+        }
+
         if (cbPrepaid.isChecked())
             printingStatus = !cbCOD.isChecked() ? Constants.PRINTING_BOTH : Constants.PRINTING_PREPAID;
          else
@@ -238,6 +257,10 @@ public class SettingsFragment extends AppBaseFragment{
 
     @OnTouch(R.id.cbPrepaidOrder)
     boolean prepaidOrders() {
+        if (!mActivity.isInternetActive()) {
+            return false;
+        }
+
         if (cbCOD.isChecked())
             printingStatus = !cbPrepaid.isChecked() ? Constants.PRINTING_BOTH : Constants.PRINTING_COD;
          else
@@ -315,6 +338,10 @@ public class SettingsFragment extends AppBaseFragment{
     }
 
     private void updateSounds() {
+        if (!mActivity.isInternetActive()) {
+            return;
+        }
+
         switch (mCheckedId) {
             case R.id.rbRinging:
                 soundType = Constants.SOUND_RINGING;
@@ -353,6 +380,10 @@ public class SettingsFragment extends AppBaseFragment{
 
     @OnClick(R.id.btChangeAlias)
     public void changeAlias() {
+        if (!mActivity.isInternetActive()) {
+            return;
+        }
+
         if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
             BDPreferences.putString(mContext, Constants.KEY_LOGIN_TYPE, Constants.LOGIN_ADMIN);
         } else {
@@ -369,5 +400,20 @@ public class SettingsFragment extends AppBaseFragment{
         super.onDestroy();
 
         unbinder.unbind();
+    }
+
+    private void connectionAlert() {
+        AlertDialog alert = Utils.createAlert(mActivity, getString(R.string.error_connection_down), getString(R.string.error_internet_disconnected));
+
+        alert.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.prompt_retry), (dialogInterface, i) -> {
+            if (!mActivity.isInternetActive()) {
+                connectionAlert();
+                return;
+            }
+
+            getSettings();
+
+        });
+        alert.show();
     }
 }

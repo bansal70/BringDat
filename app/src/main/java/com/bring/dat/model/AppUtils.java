@@ -71,7 +71,7 @@ public class AppUtils {
         if (!mOrder.deliveryarea.isEmpty()) {
             address += mOrder.deliveryarea + ", ";
         }
-        if (!mOrder.deliverycity.isEmpty()) {
+        if (!mOrder.cityName.isEmpty()) {
             address += mOrder.cityName + ", ";
         }
         if (!mOrder.deliverystate.isEmpty()) {

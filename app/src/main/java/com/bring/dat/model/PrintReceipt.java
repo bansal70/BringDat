@@ -137,7 +137,9 @@ public class PrintReceipt {
         printLeft(msg);
         //writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.leftAlign());
 
-        msg = SPACE5 + Constants.CURRENCY + mOrder.taxamount  + BREAK;
+        double salesTax = Utils.roundTwoDecimals(Double.valueOf(mOrder.taxamount));
+
+        msg = SPACE5 + Constants.CURRENCY + salesTax + BREAK;
         printRight(msg);
         // writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.rightAlign());
 

@@ -66,6 +66,10 @@ public class VoidSaleDialogFragment extends DialogBaseFragment {
 
     @OnClick(R.id.btSubmit)
     public void voidSale() {
+        if (!mActivity.isInternetActive()) {
+            return;
+        }
+
         String name = editName.getText().toString();
         String msg = editMessage.getText().toString();
         String restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
@@ -94,7 +98,7 @@ public class VoidSaleDialogFragment extends DialogBaseFragment {
         showToast(mTransaction.msg);
 
         if (mTransaction.success) {
-            mOrder.applyVoid = "Yes";
+            mOrder.applyVoid = "yes";
             if (mOnVoidTransaction != null) {
                 mOnVoidTransaction.onVoidSale(mOrder);
             }

@@ -52,7 +52,7 @@
     <string name="alert_reprint_receipt">Are you sure to print the receipt?</string>
 
     <string name="prompt_discount">BringDAT DISCOUNT</string>
-    <string name="convenience_tax">Convenience Tax</string>
+    <string name="convenience_tax">Convenience Fee</string>
     <string name="delivery_charges">Delivery Charges</string>
     <string name="tip">TIP</string>
     <string name="sales_tax">Sales Tax</string>
@@ -134,9 +134,9 @@
     <string name="prompt_new_orders">New Orders</string>
     <string name="prompt_working_orders">Working Orders</string>
     <string name="prompt_history">History</string>
-    <string name="prompt_date_time"><![CDATA[Date & Time]]></string>
+    <string name="prompt_date_time">Date/Time Received</string>
     <string name="prompt_delivery_order">Delivery Order</string>
-    <string name="prompt_time">Time</string>
+    <string name="prompt_time">Timed Order:</string>
     <string name="error_empty_time">Please enter the time in minutes</string>
     <string name="prompt_specify_time">Or, specify a time</string>
     <string name="time_60_min">60 Min</string>
@@ -158,5 +158,19 @@
     <string name="prompt_amount">Enter Amount</string>
     <string name="prompt_adjustment_reason">Reason For Adjustment</string>
     <string name="prompt_adjusting_reasons">Please enter the reason for adjusting this transaction</string>
+    <string name="prompt_currency">$</string>
+    <string name="error_empty_amount">Please enter the amount</string>
+    <string name="prompt_empty_pending_orders">No pending order exists</string>
+    <string name="prompt_empty_working_orders">No working order exists</string>
+    <string name="prompt_special_instruction">Special Instruction:</string>
+    <string name="alert_cancel_order">Are you sure you want to cancel this order?</string>
+    <string name="prompt_pickup_order">Pickup Order</string>
+    <string name="prompt_pay_cc">Direct_Pay_CC</string>
+    <string name="prompt_pay_type">Type:</string>
+    <string name="prompt_card_name">Name on Card:</string>
+    <string name="prompt_card_no">CC#:</string>
+    <string name="prompt_expiry">Exp:</string>
+    <string name="prompt_cvc">CVC:</string>
+    <string name="prompt_card_payment_type">Payment Type:</string>
 
 </resources>

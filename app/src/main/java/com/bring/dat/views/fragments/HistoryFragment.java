@@ -1,6 +1,7 @@
 package com.bring.dat.views.fragments;
 
 import android.app.Dialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -25,6 +26,7 @@ import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrdersResponse;
 import com.bring.dat.views.adapters.HomeAdapter;
+import com.bring.dat.views.services.BTService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -102,10 +104,10 @@ public class HistoryFragment extends AppBaseFragment {
     private void initViews() {
         mRecyclerOrders.setLayoutManager(new LinearLayoutManager(mContext));
 
-       /* if (!mActivity.isServiceRunning(BTService.class)) {
+        if (!mActivity.isServiceRunning(BTService.class)) {
             Intent btIntent = new Intent(mContext, BTService.class);
             mActivity.startService(btIntent);
-        }*/
+        }
 
         cardOrders.setVisibility(View.GONE);
         cardOrders2.setVisibility(View.GONE);

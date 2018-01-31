@@ -29,7 +29,7 @@ public class BluetoothService {
     public static final int MESSAGE_UNABLE_CONNECT = 6;
     private static final String NAME = "BTPrinter";
     private static UUID MY_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-   // private static UUID MY_UUID = UUID.fromString("00001112-0000-1000-8000-00805F9B34FB");
+    //private static UUID MY_UUID = UUID.fromString("00001112-0000-1000-8000-00805F9B34FB");
     private final BluetoothAdapter mAdapter = BluetoothAdapter.getDefaultAdapter();
     private final Handler mHandler;
     private BluetoothService.AcceptThread mAcceptThread;

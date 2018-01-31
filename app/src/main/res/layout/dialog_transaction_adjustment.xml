@@ -5,6 +5,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:cardCornerRadius="@dimen/_5sdp"
     app:cardUseCompatPadding="true"
+    android:maxHeight="@dimen/_150sdp"
     android:layout_marginTop="@dimen/_30sdp"
     android:layout_marginBottom="@dimen/_30sdp"
     android:layout_gravity="center">
@@ -60,7 +61,7 @@
                     <TextView
                         android:layout_width="@dimen/_25sdp"
                         android:layout_height="match_parent"
-                        android:text="$"
+                        android:text="@string/prompt_currency"
                         android:textColor="@color/black"
                         android:layout_gravity="center"
                         android:gravity="center"/>
@@ -79,7 +80,7 @@
                         android:padding="@dimen/_10sdp"
                         android:textSize="@dimen/_15sdp"
                         android:background="@color/transparent"
-                        android:inputType="numberDecimal"/>
+                        android:inputType="text"/>
 
                 </LinearLayout>
 
@@ -108,12 +109,6 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"/>
-
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/recyclerReasons"
-                    android:visibility="gone"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"/>
 
                 <EditText
                     android:id="@+id/editMessage"
@@ -159,7 +154,7 @@
                 android:background="@drawable/shape_button_green_rounded"
                 style="?android:attr/buttonBarButtonStyle"
                 android:textColor="@color/colorWhite"
-                android:padding="@dimen/_15sdp"/>
+                android:padding="@dimen/_10sdp"/>
 
             <Button
                 android:id="@+id/btCancel"
@@ -174,7 +169,7 @@
                 android:background="@drawable/shape_rounded_sky_blue"
                 style="?android:attr/buttonBarButtonStyle"
                 android:textColor="@color/colorWhite"
-                android:padding="@dimen/_15sdp"/>
+                android:padding="@dimen/_10sdp"/>
 
         </LinearLayout>
 

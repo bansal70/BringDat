@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -139,6 +140,24 @@ public class OrderDetailsActivity extends AppBaseActivity {
     @BindView(R.id.imgPayment)
     ImageView imgPayment;
 
+    @BindView(R.id.cardPaymentType)
+    CardView cardPaymentType;
+
+    @BindView(R.id.tvCardType)
+    TextView tvCardType;
+
+    @BindView(R.id.tvCardName)
+    TextView tvCardName;
+
+    @BindView(R.id.tvCardNumber)
+    TextView tvCardNumber;
+
+    @BindView(R.id.tvExpiry)
+    TextView tvExpiry;
+
+    @BindView(R.id.tvCVC)
+    TextView tvCVC;
+
     OrderDetails mOrderDetails = null;
 
     ItemsAdapter itemsAdapter;
@@ -164,6 +183,10 @@ public class OrderDetailsActivity extends AppBaseActivity {
             toolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorAccent));
         }
 
+        if (!isInternetActive()) {
+            connectionAlert();
+            return;
+        }
         getDetails();
     }
 
@@ -214,6 +237,11 @@ public class OrderDetailsActivity extends AppBaseActivity {
         tvOrderNumber.setText(mOrder.orderid);
         tvAddress.setText(AppUtils.userAddress(mOrder));
         String mDeliveryType = mOrder.deliverytype.substring(0, 1).toUpperCase() + mOrder.deliverytype.substring(1);
+        if (mOrder.deliverytype.equalsIgnoreCase("delivery")) {
+            tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_delivery, 0,0,0);
+        } else {
+            tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_pickup, 0,0,0);
+        }
         tvDeliveryType.setText(mDeliveryType);
         tvDate.setText(mOrder.deliverytime);
 
@@ -227,7 +255,8 @@ public class OrderDetailsActivity extends AppBaseActivity {
         tvOrderPrice.setText(String.format("%s%s", Constants.CURRENCY, mOrder.ordertotalprice));
 
         tvSubtotal.setText(String.format("%s%s", Constants.CURRENCY, mOrder.ordersubtotal));
-        tvSalesTax.setText(String.format("%s%s", Constants.CURRENCY, mOrder.taxamount));
+        double salesTax = Utils.roundTwoDecimals(Double.valueOf(mOrder.taxamount));
+        tvSalesTax.setText(String.format("%s%s", Constants.CURRENCY, salesTax));
         tvTip.setText(String.format("%s%s", Constants.CURRENCY, mOrder.tipamount));
         tvDeliveryPrice.setText(String.format("%s%s", Constants.CURRENCY, mOrder.deliveryamount));
         tvConvenienceTax.setText(String.format("%s%s", Constants.CURRENCY, mOrder.convenienceFee));
@@ -287,6 +316,27 @@ public class OrderDetailsActivity extends AppBaseActivity {
 
         checkInterval(mOrder);
         setStatus(mOrder);
+        setPaymentDetails(mOrderDetails);
+    }
+
+    private void setPaymentDetails(OrderDetails mOrderDetails) {
+        OrderDetails.Data data = mOrderDetails.data;
+        Order mOrder = data.order.get(0);
+
+        List<List<String>> listCard = data.ccDetails;
+        if (listCard.size() == 0)
+            return;
+
+        List<String> card = listCard.get(0);
+        if (card.size() > 4 && (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC) || !mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD))) {
+            cardPaymentType.setVisibility(View.VISIBLE);
+
+            tvCardType.append(" " + card.get(0).toUpperCase());
+            tvCardName.append(" " + card.get(1).toUpperCase());
+            tvCardNumber.append(" " + card.get(2).toUpperCase());
+            tvExpiry.append(" " + card.get(3).toUpperCase());
+            tvCVC.append(" " + card.get(4).toUpperCase());
+        }
     }
 
     private void checkInterval(Order mOrder) {
@@ -295,14 +345,10 @@ public class OrderDetailsActivity extends AppBaseActivity {
         }
 
         if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID)) {
-            if (mOrder.twoDaysInterval.equalsIgnoreCase("Yes")) {
+            if (mOrder.twoDaysInterval.equalsIgnoreCase("yes")) {
                 cancelOrderLL.setVisibility(View.VISIBLE);
-                if (mOrder.applyVoid.equalsIgnoreCase("no")) {
-                    btVoidSale.setVisibility(View.VISIBLE);
-                }
-                if (mOrder.applyAdjust.equalsIgnoreCase("no")) {
-                    btAdjust.setVisibility(View.VISIBLE);
-                }
+                btVoidSale.setVisibility(mOrder.applyVoid.equalsIgnoreCase("no") ? View.VISIBLE : View.GONE);
+                btAdjust.setVisibility(mOrder.applyAdjust.equalsIgnoreCase("no") ? View.VISIBLE : View.GONE);
             }
         }
     }
@@ -377,9 +423,15 @@ public class OrderDetailsActivity extends AppBaseActivity {
         });
 
         btCancel.setOnClickListener(view -> {
-            mOrderStatus = "4"; // canceled order
-            mOrderTime = "";
-            updateOrder();
+            AlertDialog alert = Utils.createAlert(this, "", getString(R.string.alert_cancel_order));
+            alert.setButton(Dialog.BUTTON_POSITIVE, getString(android.R.string.yes),
+                    (dialogInterface, i) -> {
+                        mOrderStatus = "4"; // canceled order
+                        mOrderTime = "";
+                        updateOrder();
+                    });
+            alert.setButton(Dialog.BUTTON_NEGATIVE, getString(android.R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss());
+            alert.show();
         });
 
         if (mOrder.status.contains("pending")) {
@@ -430,6 +482,10 @@ public class OrderDetailsActivity extends AppBaseActivity {
     }
 
     private void updateOrder() {
+        if (!isInternetActive()) {
+            return;
+        }
+
         showDialog();
         String restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
         String token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
@@ -472,11 +528,12 @@ public class OrderDetailsActivity extends AppBaseActivity {
         }
 
         setStatus(mOrder);
+        finish();
     }
 
     private void getReasons() {
         // mActivity.showDialog();
-        apiService.getAdjustReasons("adjust")
+        apiService.getAdjustReasons()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .onErrorResumeNext(throwable -> {
@@ -515,11 +572,11 @@ public class OrderDetailsActivity extends AppBaseActivity {
         bundle.putString("orderData", new Gson().toJson(mOrder));
         bundle.putString("adjustData", new Gson().toJson(mAdjustReasons));
 
-        AdjustSaleDialogFragment ajustFragment = new AdjustSaleDialogFragment();
-        ajustFragment.setArguments(bundle);
-        ajustFragment.show(getSupportFragmentManager(), "Adjust Sale");
+        AdjustSaleDialogFragment adjustFragment = new AdjustSaleDialogFragment();
+        adjustFragment.setArguments(bundle);
+        adjustFragment.show(getSupportFragmentManager(), "Adjust Sale");
 
-        ajustFragment .setOnVoidSaleListener(this::checkInterval);
+        adjustFragment.setOnAdjustSaleListener(this::checkInterval);
     }
 
     @Override
@@ -527,6 +584,21 @@ public class OrderDetailsActivity extends AppBaseActivity {
         super.onNewIntent(intent);
 
         getDetails();
+    }
+
+    private void connectionAlert() {
+        AlertDialog alert = Utils.createAlert(this, getString(R.string.error_connection_down), getString(R.string.error_internet_disconnected));
+
+        alert.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.prompt_retry), (dialogInterface, i) -> {
+            if (!isInternetActive()) {
+                connectionAlert();
+                return;
+            }
+
+            getDetails();
+
+        });
+        alert.show();
     }
 
 }

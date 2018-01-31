@@ -52,9 +52,9 @@
             android:layout_marginEnd="@dimen/_10sdp">
 
             <ImageView
-                android:layout_width="@dimen/_15sdp"
+                android:layout_width="@dimen/_18sdp"
+                android:layout_height="@dimen/_18sdp"
                 android:layout_gravity="start|center"
-                android:layout_height="@dimen/_15sdp"
                 android:layout_marginLeft="@dimen/_6sdp"
                 android:contentDescription="@null"
                 android:src="@drawable/phone_receiver"
@@ -64,10 +64,11 @@
                 android:id="@+id/tvOrderPhone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text=""
+                android:layout_marginLeft="@dimen/_5sdp"
+                android:layout_marginStart="@dimen/_5sdp"
                 android:layout_weight="1"
-                android:textColor="@color/colorGray"
-                android:textSize="@dimen/_12sdp" />
+                android:textColor="@color/black"
+                android:textSize="@dimen/_20sdp" />
 
             <TextView
                 android:id="@+id/tvOrderStatus"
@@ -222,6 +223,7 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
                 android:layout_weight="1"
+                android:textSize="@dimen/_15sdp"
                 android:drawableLeft="@drawable/ic_clock"
                 android:drawableStart="@drawable/ic_clock"
                 android:layout_gravity="center"
@@ -239,6 +241,7 @@
                     android:layout_height="wrap_content"
                     android:visibility="visible"
                     android:gravity="center"
+                    android:textSize="@dimen/_15sdp"
                     android:textColor="@color/black"
                     android:drawableLeft="@drawable/ic_delivery"
                     android:drawableStart="@drawable/ic_delivery"
@@ -285,7 +288,6 @@
                         android:layout_marginEnd="@dimen/_1sdp" />
 
                     <TextView
-                        android:id="@+id/TVOrdernumber"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/_1sdp"
@@ -303,6 +305,7 @@
                     android:textColor="@color/text_color_work_order"
                     android:textSize="@dimen/_14sdp"
                     android:textStyle="bold" />
+
             </LinearLayout>
 
             <View

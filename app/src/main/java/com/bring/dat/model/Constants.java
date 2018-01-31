@@ -8,7 +8,7 @@ public class Constants {
     public static final String DEVICE_TOKEN = "android";
     public static final String CURRENCY = "$";
     public static final String PRINTER_MAC_ADDRESS = "66:02:1A:24:08:A8";
-    //public static final String SAMSUNG_MAC_ADDRESS = "5C:99:60:6B:A0:EF";
+    public static final String SAMSUNG_MAC_ADDRESS = "5C:99:60:6B:A0:EF";
     // public static final String REDMI_MAC_ADDRESS = "E4:46:DA:17:C9:9E";
 
     public static final String KEY_EMAIL = "email";
@@ -38,5 +38,6 @@ public class Constants {
 
     public static final String PAYMENT_COD = "COD";
     public static final String PAYMENT_PREPAID = "PREPAID";
+    public static final String PAYMENT_CC = "DIRECT_PAY_CC";
 
 }
