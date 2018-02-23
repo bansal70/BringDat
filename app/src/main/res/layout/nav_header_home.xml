@@ -9,8 +9,8 @@
 
     <ImageView
         android:id="@+id/ivProfilePic"
-        android:layout_width="@dimen/_90sdp"
-        android:layout_height="@dimen/_90sdp"
+        android:layout_width="@dimen/_110sdp"
+        android:layout_height="@dimen/_110sdp"
         android:layout_marginTop="@dimen/_40sdp"
         android:contentDescription="@string/app_name"
         android:src="@drawable/logo"/>

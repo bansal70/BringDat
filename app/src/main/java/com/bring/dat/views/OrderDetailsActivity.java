@@ -1,5 +1,6 @@
 package com.bring.dat.views;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
@@ -21,6 +22,7 @@ import com.bring.dat.R;
 import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
+import com.bring.dat.model.NetworkPrinting;
 import com.bring.dat.model.Operations;
 import com.bring.dat.model.PrintReceipt;
 import com.bring.dat.model.Utils;
@@ -30,8 +32,10 @@ import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.model.pojo.Settings;
 import com.bring.dat.views.adapters.ItemsAdapter;
+import com.bring.dat.views.adapters.OrderLogAdapter;
 import com.bring.dat.views.fragments.AdjustSaleDialogFragment;
 import com.bring.dat.views.fragments.VoidSaleDialogFragment;
+import com.bring.dat.views.services.BTService;
 import com.google.gson.Gson;
 
 import java.util.List;
@@ -65,6 +69,9 @@ public class OrderDetailsActivity extends AppBaseActivity {
     @BindView(R.id.tvOrderPhone)
     TextView tvOrderPhone;
 
+    @BindView(R.id.tvEmail)
+    TextView tvEmail;
+
     @BindView(R.id.tvOrderStatus)
     TextView tvOrderStatus;
 
@@ -88,6 +95,15 @@ public class OrderDetailsActivity extends AppBaseActivity {
 
     @BindView(R.id.tvSubtotal)
     TextView tvSubtotal;
+
+    @BindView(R.id.couponsLL)
+    LinearLayout couponsLL;
+
+    @BindView(R.id.tvOfferName)
+    TextView tvOfferName;
+
+    @BindView(R.id.tvOfferAmount)
+    TextView tvOfferAmount;
 
     @BindView(R.id.tvTaxValue)
     TextView tvTaxValue;
@@ -137,6 +153,12 @@ public class OrderDetailsActivity extends AppBaseActivity {
     @BindView(R.id.btAdjust)
     Button btAdjust;
 
+    @BindView(R.id.cardInstructions)
+    CardView cardInstructions;
+
+    @BindView(R.id.tvOrderInstructions)
+    TextView tvOrderInstructions;
+
     @BindView(R.id.imgPayment)
     ImageView imgPayment;
 
@@ -157,6 +179,12 @@ public class OrderDetailsActivity extends AppBaseActivity {
 
     @BindView(R.id.tvCVC)
     TextView tvCVC;
+
+    @BindView(R.id.cardLog)
+    CardView cardLog;
+
+    @BindView(R.id.recyclerLog)
+    RecyclerView recyclerLog;
 
     OrderDetails mOrderDetails = null;
 
@@ -230,20 +258,39 @@ public class OrderDetailsActivity extends AppBaseActivity {
         mOrderId = mOrder.orderid;
         mOrderStatus = mOrder.status;
 
-        tvOrderTime.setText(String.format("%s", mOrder.orderdate));
+        tvOrderTime.setText(String.format("%s %s", Utils.parseDateToMMddYY(mOrder.deliverydate), mOrder.orderdate));
         tvPersonName.setText(String.format("%s %s", mOrder.customername, mOrder.customerlastname));
+        tvEmail.setText(mOrder.customeremail);
         tvOrderPhone.setText(mOrder.customercellphone);
         tvPaymentType.setText(mOrder.paymentType);
         tvOrderNumber.setText(mOrder.orderid);
         tvAddress.setText(AppUtils.userAddress(mOrder));
+        String time;
+
+        if (Utils.getToday().equals(mOrder.deliverydate)) {
+            time = getString(R.string.prompt_today) + " " +
+                    Utils.parseTimeToAMPM(mOrder.deliverytime);
+        } else {
+            time = Utils.parseDateToMMdd(mOrder.deliverydate) + " " + mOrder.deliverytime;
+        }
+
+        if (mOrder.deliverytime.equalsIgnoreCase("ASAP")) {
+            time = mOrder.deliverytime;
+        } else {
+            tvDate.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorBloodRed));
+            tvDate.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+            tvDate.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_clock_white, 0,0,0);
+        }
+        tvDate.setText(time);
+
         String mDeliveryType = mOrder.deliverytype.substring(0, 1).toUpperCase() + mOrder.deliverytype.substring(1);
         if (mOrder.deliverytype.equalsIgnoreCase("delivery")) {
             tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_delivery, 0,0,0);
         } else {
             tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_pickup, 0,0,0);
         }
+
         tvDeliveryType.setText(mDeliveryType);
-        tvDate.setText(mOrder.deliverytime);
 
         int color = mOrder.status.contains("cancel") || mOrder.status.contains("decline") ?
                 ContextCompat.getColor(mContext, R.color.colorRed) :
@@ -253,10 +300,13 @@ public class OrderDetailsActivity extends AppBaseActivity {
         tvOrderStatus.setText(mOrderStatus);
         tvOrderStatus.setTextColor(color);
         tvOrderPrice.setText(String.format("%s%s", Constants.CURRENCY, mOrder.ordertotalprice));
-
         tvSubtotal.setText(String.format("%s%s", Constants.CURRENCY, mOrder.ordersubtotal));
-        double salesTax = Utils.roundTwoDecimals(Double.valueOf(mOrder.taxamount));
-        tvSalesTax.setText(String.format("%s%s", Constants.CURRENCY, salesTax));
+        if (!mOrder.offerId.isEmpty() && !mOrder.offeramount.equals("0.00")) {
+            couponsLL.setVisibility(View.VISIBLE);
+            tvOfferName.setText(String.format("(%s)", mOrder.offerName));
+            tvOfferAmount.setText(String.format("%s%s", Constants.CURRENCY, mOrder.offeramount));
+        }
+        tvSalesTax.setText(String.format("%s%s", Constants.CURRENCY, mOrder.taxamount));
         tvTip.setText(String.format("%s%s", Constants.CURRENCY, mOrder.tipamount));
         tvDeliveryPrice.setText(String.format("%s%s", Constants.CURRENCY, mOrder.deliveryamount));
         tvConvenienceTax.setText(String.format("%s%s", Constants.CURRENCY, mOrder.convenienceFee));
@@ -309,14 +359,21 @@ public class OrderDetailsActivity extends AppBaseActivity {
             }
         }
 
+        if (!mOrder.instructions.isEmpty()) {
+            cardInstructions.setVisibility(View.VISIBLE);
+            tvOrderInstructions.setText(mOrder.instructions);
+        }
+
         List<Cart> mListCart = mOrderDetails.data.cart;
         itemsAdapter = new ItemsAdapter(mContext, mListCart);
+        recyclerItems.setNestedScrollingEnabled(false);
         recyclerItems.setLayoutManager(new LinearLayoutManager(mContext));
         recyclerItems.setAdapter(itemsAdapter);
 
         checkInterval(mOrder);
         setStatus(mOrder);
         setPaymentDetails(mOrderDetails);
+        setOrderLog(mOrderDetails);
     }
 
     private void setPaymentDetails(OrderDetails mOrderDetails) {
@@ -337,6 +394,20 @@ public class OrderDetailsActivity extends AppBaseActivity {
             tvExpiry.append(" " + card.get(3).toUpperCase());
             tvCVC.append(" " + card.get(4).toUpperCase());
         }
+    }
+
+    private void setOrderLog(OrderDetails mOrderDetails) {
+        OrderDetails.Data data = mOrderDetails.data;
+        List<OrderDetails.OrderLog> mListLog = data.orderLog;
+        if (mListLog.size() == 0) {
+            return;
+        }
+
+        cardLog.setVisibility(View.VISIBLE);
+        OrderLogAdapter mLogAdapter = new OrderLogAdapter(mContext, mListLog);
+        recyclerLog.setNestedScrollingEnabled(false);
+        recyclerLog.setLayoutManager(new LinearLayoutManager(mContext));
+        recyclerLog.setAdapter(mLogAdapter);
     }
 
     private void checkInterval(Order mOrder) {
@@ -385,7 +456,15 @@ public class OrderDetailsActivity extends AppBaseActivity {
     }
 
     private void print() {
-        PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+        if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
+            NetworkPrinting networkPrinting = new NetworkPrinting((Activity) mContext);
+            networkPrinting.printData((Activity)mContext, mOrderDetails);
+        } else if (Utils.isServiceRunning(mContext, BTService.class)) {
+            PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+        } else {
+            Utils.showToast(mContext, mContext.getString(R.string.error_printer_unavailable));
+        }
+        //PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
         btPrintOrder.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorRed));
         btPrintOrder.setText(getString(R.string.prompt_reprint));
     }

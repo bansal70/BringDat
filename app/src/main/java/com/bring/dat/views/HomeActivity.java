@@ -13,14 +13,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.TextView;
 
+import com.bring.dat.BuildConfig;
 import com.bring.dat.R;
 import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
-import com.bring.dat.model.Utils;
 import com.bring.dat.views.fragments.HistoryFragment;
 import com.bring.dat.views.fragments.HomeFragment;
 import com.bring.dat.views.fragments.ReportsFragment;
@@ -43,6 +42,9 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
     @BindView(R.id.toolbarTitle)
     TextView tvToolbar;
 
+    @BindView(R.id.tvAppVersion)
+    TextView tvAppVersion;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,16 +62,12 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
     private void initNav() {
         //tvToolbar.setText(R.string.prompt_home);
         final ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(this, drawerLayout,
-                toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close) {
-            public void onDrawerClosed(View view) {
-                super.onDrawerClosed(view);
-            }
+                toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
 
-            public void onDrawerOpened(View drawerView) {
-                super.onDrawerOpened(drawerView);
-                Utils.hideKeyboard(mContext, getCurrentFocus());
-            }
-        };
+        toggle.setDrawerIndicatorEnabled(false);
+        toggle.setHomeAsUpIndicator(R.drawable.ic_menu);
+        toggle.setToolbarNavigationClickListener(view -> drawerLayout.openDrawer(GravityCompat.START));
+
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
@@ -87,6 +85,8 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
             navigationView.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorAccent));
             toolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorAccent));
         }
+
+        tvAppVersion.setText(String.format("%s %s %s", getString(R.string.prompt_version), BuildConfig.VERSION_NAME, getString(R.string.prompt_version_date)));
 
         navigationView.setNavigationItemSelectedListener(this);
     }
@@ -108,9 +108,6 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
                 } else {
                     goToHomeFragment(new HomeFragment());
                 }
-                /*else if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
-                    getSupportFragmentManager().popBackStack("", FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                }*/
                 break;
 
             case R.id.nav_history:
@@ -121,7 +118,7 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
                         tvToolbar.setText(getString(R.string.prompt_home));
                     else
                         tvToolbar.setText(getString(R.string.prompt_history));
-                    goToFragment(new HistoryFragment());
+                        goToFragment(new HistoryFragment());
                 }
                 break;
 
@@ -162,7 +159,6 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
         }
 
         drawerLayout.closeDrawer(GravityCompat.START);
-        //Utils.gotoNextActivityAnimation(mContext);
         return true;
     }
 
@@ -175,23 +171,6 @@ public class HomeActivity extends AppBaseActivity implements NavigationView.OnNa
         } else {
             goToHomeFragment(new HomeFragment());
         }
-
-        /*boolean order = intent.getBooleanExtra("order", false);
-
-        String details = intent.getStringExtra("orderDetails");*/
-        /*OrderDetails mOrderDetails = new Gson().fromJson(details, OrderDetails.class);
-        OrderDetails.Data data = mOrderDetails.data;
-        Order mOrder = data.order.get(0);
-
-        mOrdersList.set(0, mOrder);
-        mOrder.order_print_status = "1";
-        mHomeAdapter.notifyDataSetChanged();
-
-        if (order) {
-
-            fetchData();
-            page = 0;
-        }*/
     }
 
     @Override

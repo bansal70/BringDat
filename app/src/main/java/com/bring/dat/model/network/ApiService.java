@@ -12,9 +12,14 @@ import java.util.HashMap;
 
 import io.reactivex.Flowable;
 import io.reactivex.Observable;
+import okhttp3.RequestBody;
+import okhttp3.ResponseBody;
+import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.Headers;
 import retrofit2.http.POST;
 import retrofit2.http.QueryMap;
+import retrofit2.http.Url;
 
 /*
  * Created by rishav on 12/25/2017.
@@ -66,4 +71,12 @@ public interface ApiService {
 
     @POST("webservices.php?action=adjustTransaction")
     Observable<Transaction> adjustTransaction(@QueryMap HashMap<String, String> mapParams);
+
+    @Headers({
+            "Content-Type: text/xml",
+            "Accept-Charset: utf-8"
+    })
+    @POST
+    Observable<ResponseBody> getPrintApi(@Url String url, @Body RequestBody requestBody);
+
 }

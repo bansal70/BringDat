@@ -41,6 +41,7 @@
                     android:text="@string/prompt_email"
                     android:layout_marginLeft="@dimen/_10sdp"
                     android:layout_marginStart="@dimen/_10sdp"
+                    android:textSize="@dimen/_16sdp"
                     android:textColor="@color/colorWhite"/>
 
                 <EditText
@@ -50,6 +51,7 @@
                     android:layout_marginTop="@dimen/_5sdp"
                     android:layout_marginStart="@dimen/_10sdp"
                     android:layout_marginLeft="@dimen/_10sdp"
+                    android:textSize="@dimen/_15sdp"
                     android:inputType="textEmailAddress"
                     android:background="@color/transparent"
                     android:textColor="@color/colorWhite"
@@ -92,6 +94,7 @@
                     android:text="@string/prompt_password"
                     android:layout_marginLeft="@dimen/_10sdp"
                     android:layout_marginStart="@dimen/_10sdp"
+                    android:textSize="@dimen/_16sdp"
                     android:textColor="@color/colorWhite"/>
 
                 <EditText
@@ -102,6 +105,7 @@
                     android:layout_marginStart="@dimen/_10sdp"
                     android:layout_marginLeft="@dimen/_10sdp"
                     android:inputType="textPassword"
+                    android:textSize="@dimen/_15sdp"
                     android:background="@color/transparent"
                     android:textColor="@color/colorWhite"
                     android:textColorHint="@color/colorWhite"

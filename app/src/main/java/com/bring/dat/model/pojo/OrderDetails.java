@@ -16,6 +16,8 @@ public class OrderDetails {
     public String msg;
     @SerializedName("data")
     public Data data;
+    @SerializedName("authentication")
+    public String mAuthentication = "0";
 
     public class Data {
         @SerializedName("order")
@@ -43,6 +45,6 @@ public class OrderDetails {
         public String actionType;
         @SerializedName("addeddate")
         @Expose
-        public String addeddate;
+        public String addedDate;
     }
 }

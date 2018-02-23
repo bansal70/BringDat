@@ -4,9 +4,6 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
-/**
- * Created by win 10 on 12/26/2017.
- */
 
 abstract public class RecyclerPagination extends RecyclerView.OnScrollListener {
 

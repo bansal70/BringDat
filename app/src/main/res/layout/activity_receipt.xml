@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="365dp"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    tools:context="com.bring.dat.views.ReceiptActivity">
+
+    <TextView
+        android:id="@+id/tvText"
+        android:layout_width="365dp"
+        android:layout_height="wrap_content"
+        android:gravity="top|center"
+        android:layout_gravity="center|top" />
+
+</ScrollView>

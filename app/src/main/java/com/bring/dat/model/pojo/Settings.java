@@ -20,6 +20,8 @@ public class Settings {
     public String mOrderStatus;
     @SerializedName("data")
     public Data data;
+    @SerializedName("authentication")
+    public String mAuthentication = "0";
 
     public static class Data {
         @SerializedName("menu_only_merchant_flag")

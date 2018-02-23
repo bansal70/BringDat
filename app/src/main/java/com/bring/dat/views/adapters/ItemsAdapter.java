@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.bring.dat.R;
+import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.pojo.Cart;
 
 import java.util.List;
@@ -37,11 +38,13 @@ public class ItemsAdapter extends RecyclerView.Adapter<ItemsAdapter.ViewHolder>{
         holder.tvQuantity.setText(mCart.qty);
         float totalPrice = Float.parseFloat(mCart.qty) * mCart.price;
         //String price = mCart.qty + "*" + mCart.price + " = ";
-        holder.tvItemPrice.setText(String.format("$%s", totalPrice));
+        holder.tvItemPrice.setText(String.format("$%s", AppUtils.roundTwoDecimal(totalPrice)));
         if (mCart.toppingsName.isEmpty() && mCart.description.isEmpty()) {
             holder.tvToppings.setVisibility(View.GONE);
         } else {
-            holder.tvToppings.setText(mCart.toppingsName.isEmpty() ? mCart.description : mCart.toppingsName);
+            if (!mCart.description.isEmpty()) {
+                holder.tvToppings.setText(String.format("%s\n", mCart.description));
+            }
             if (!mCart.full.isEmpty()) {
                 holder.tvToppings.append(mCart.full + "\n");
             }

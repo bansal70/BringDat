@@ -12,6 +12,8 @@ public class AdjustReasons {
     public String mMsg;
     @SerializedName("success")
     public boolean mSuccess;
+    @SerializedName("authentication")
+    public String mAuthentication = "0";
 
     public static class Option {
         @SerializedName("addeddate")

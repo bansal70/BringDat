@@ -7,6 +7,9 @@
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
     <application
         android:name=".model.Application"
@@ -23,17 +26,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".views.OrdersHistoryActivity" />
-        <activity android:name=".views.HomeActivity"
-                   android:launchMode="singleTop"
-                   android:windowSoftInputMode="stateAlwaysHidden"/>
-        <activity android:name=".views.LoginActivity"/>
+        <activity
+            android:name=".views.HomeActivity"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity android:name=".views.LoginActivity" />
         <activity android:name=".views.MainActivity" />
         <activity
             android:name=".views.OrdersListActivity"
             android:launchMode="singleTop" />
-        <activity android:name=".views.OrderDetailsActivity"
-            android:windowSoftInputMode="stateAlwaysHidden"/>
+        <activity
+            android:name=".views.OrderDetailsActivity"
+            android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".views.DeviceListActivity"
             android:label="@string/label_select_device"
@@ -46,8 +50,9 @@
                 <action android:name="com.google.firebase.MESSAGING_EVENT" />
             </intent-filter>
         </service>
-
         <service android:name=".views.services.BTService" />
+        <service android:name=".views.services.AlarmService" />
+        <service android:name=".views.services.WFService" />
 
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_icon"
@@ -55,6 +60,15 @@
         <meta-data
             android:name="com.google.firebase.messaging.default_notification_color"
             android:resource="@color/colorAccent" />
+
+        <!--
+        <receiver android:name=".views.services.NetworkChangeReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
+            </intent-filter>
+        </receiver>
+        -->
 
     </application>
 

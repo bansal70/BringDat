@@ -19,6 +19,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.bring.dat.R;
+import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Operations;
@@ -27,7 +28,7 @@ import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrdersResponse;
 import com.bring.dat.views.adapters.HomeAdapter;
 import com.bring.dat.views.adapters.NewOrdersAdapter;
-import com.bring.dat.views.services.BTService;
+import com.bring.dat.views.services.AlarmService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,6 +86,7 @@ public class HomeFragment extends AppBaseFragment {
     private NewOrdersAdapter mNewOrderAdapter;
 
     String token, restId;
+    boolean isNewOrders = true, isPendingOrders = false;
 
     @Nullable
     @Override
@@ -102,10 +104,22 @@ public class HomeFragment extends AppBaseFragment {
     private void initViews() {
         mRecyclerOrders.setLayoutManager(new LinearLayoutManager(mContext));
 
-        if (!mActivity.isServiceRunning(BTService.class)) {
-            Intent btIntent = new Intent(mContext, BTService.class);
-            mActivity.startService(btIntent);
-        }
+        /* String lastPrinter = BDPreferences.readString(mContext, Constants.LAST_PRINTER_CONNECTED);
+
+        switch (lastPrinter) {
+            case Constants.PRINTER_BLUETOOTH:
+                if (!mActivity.isServiceRunning(BTService.class)) {
+                    Intent btIntent = new Intent(mContext, BTService.class);
+                    mActivity.startService(btIntent);
+                }
+                break;
+            case Constants.PRINTER_WIFI:
+                if (!mActivity.isServiceRunning(WFService.class)) {
+                    Intent btIntent = new Intent(mContext, WFService.class);
+                    mActivity.startService(btIntent);
+                }
+                break;
+        } */
 
         cardOrders.setVisibility(BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER) ? View.GONE : View.VISIBLE);
 
@@ -131,7 +145,7 @@ public class HomeFragment extends AppBaseFragment {
 
 
     private void getPendingOrders() {
-        //mActivity.showProgressBar();
+        mActivity.showDialog();
         apiService.getNewOrders(Operations.newOrdersParams(restId, token))
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -144,18 +158,18 @@ public class HomeFragment extends AppBaseFragment {
     }
 
     private void setPendingOrders(OrdersResponse mOrdersResponse) {
-        if (mOrdersResponse.success) {
-            mPendingOrdersList.clear();
-            //llHome.setVisibility(View.VISIBLE);
-            OrdersResponse.Data mOrdersData = mOrdersResponse.data;
-            mPendingOrdersList.addAll(mOrdersData.orderList);
-            mNewOrderAdapter.notifyDataSetChanged();
-        } else {
-            showToast(mOrdersResponse.msg);
-            mSwipeRefreshLayout.setRefreshing(false);
+        if (mOrdersResponse.mAuthentication.equals(Constants.ERROR_AUTHENTICATION)) {
+            AppUtils.openMain(mActivity);
+            showToast(getString(R.string.error_session_expired));
+            return;
         }
+
+        mPendingOrdersList.clear();
+        OrdersResponse.Data mOrdersData = mOrdersResponse.data;
+        mPendingOrdersList.addAll(mOrdersData.orderList);
+        mSwipeRefreshLayout.setRefreshing(false);
+
         getWorkingOrders();
-        //mActivity.dismissDialog();
     }
 
     private void getWorkingOrders() {
@@ -168,6 +182,119 @@ public class HomeFragment extends AppBaseFragment {
                 .doOnNext(this::setWorkingOrders)
                 .doOnError(this::serverError)
                 .subscribe();
+    }
+
+    private void setWorkingOrders(OrdersResponse mOrdersResponse) {
+        mSwipeRefreshLayout.setRefreshing(false);
+        if (mOrdersResponse.mAuthentication.equals(Constants.ERROR_AUTHENTICATION)) {
+            AppUtils.openMain(mActivity);
+            showToast(getString(R.string.error_session_expired));
+            return;
+        }
+
+        mProgressBar.setVisibility(View.GONE);
+        mActivity.hideProgressBar();
+        mActivity.dismissDialog();
+        llHome.setVisibility(View.VISIBLE);
+
+        if (!Utils.isServiceRunning(mContext, AlarmService.class)) {
+            Intent alarmIntent = new Intent(mContext, AlarmService.class);
+            mContext.startService(alarmIntent);
+        }
+
+        mWorkingOrdersList.clear();
+        OrdersResponse.Data mOrdersData = mOrdersResponse.data;
+        mWorkingOrdersList.addAll(mOrdersData.orderList);
+
+        if (isNewOrders) {
+            mNewOrderAdapter = new NewOrdersAdapter(mContext, mPendingOrdersList);
+            mRecyclerOrders.setAdapter(mNewOrderAdapter);
+            if (mPendingOrdersList.size() == 0) {
+                tvNoOrders.setVisibility(View.VISIBLE);
+                tvNoOrders.setText(getString(R.string.prompt_empty_pending_orders));
+            } else {
+                tvNoOrders.setVisibility(View.GONE);
+            }
+        }
+
+        if (isPendingOrders) {
+            mHomeAdapter = new HomeAdapter(mContext, mWorkingOrdersList);
+            mRecyclerOrders.setAdapter(mHomeAdapter);
+
+            if (mWorkingOrdersList.size() == 0) {
+                tvNoOrders.setVisibility(View.VISIBLE);
+                tvNoOrders.setText(getString(R.string.prompt_empty_working_orders));
+            } else {
+                tvNoOrders.setVisibility(View.GONE);
+            }
+        }
+
+        tvPendingOrders.setText(String.valueOf(mPendingOrdersList.size()));
+        tvCompletedOrders.setText(String.valueOf(mWorkingOrdersList.size()));
+
+        /*if (!mOrdersResponse.success) {
+            mHomeAdapter.notifyDataSetChanged();
+        }*/
+    }
+
+    @OnClick(R.id.tvNewOrders)
+    public void newOrders() {
+        isNewOrders = true;
+        isPendingOrders = false;
+        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
+        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+
+        mNewOrderAdapter = new NewOrdersAdapter(mContext, mPendingOrdersList);
+        mRecyclerOrders.setAdapter(mNewOrderAdapter);
+
+        tvNoOrders.setVisibility(mPendingOrdersList.size() == 0 ? View.VISIBLE : View.GONE);
+        tvNoOrders.setText(getString(R.string.prompt_empty_pending_orders));
+    }
+
+    @OnClick(R.id.tvWorkingOrders)
+    public void workingOrders() {
+        isNewOrders = false;
+        isPendingOrders = true;
+
+        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
+
+        mHomeAdapter = new HomeAdapter(mContext, mWorkingOrdersList);
+        mRecyclerOrders.setAdapter(mHomeAdapter);
+
+        tvNoOrders.setVisibility(mWorkingOrdersList.size() == 0 ? View.VISIBLE : View.GONE);
+        tvNoOrders.setText(getString(R.string.prompt_empty_working_orders));
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (!mActivity.isInternetActive()) {
+            connectionAlert();
+            return;
+        }
+        getPendingOrders();
+    }
+
+    private void connectionAlert() {
+        AlertDialog alert = Utils.createAlert(mActivity, getString(R.string.error_connection_down), getString(R.string.error_internet_disconnected));
+
+        alert.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.prompt_retry), (dialogInterface, i) -> {
+            if (!mActivity.isInternetActive()) {
+                connectionAlert();
+                return;
+            }
+
+            mSwipeRefreshLayout.setRefreshing(true);
+            getPendingOrders();
+
+        });
+        alert.show();
     }
 
     public void serverError(Throwable throwable) {
@@ -186,92 +313,6 @@ public class HomeFragment extends AppBaseFragment {
         mActivity.hideProgressBar();
         mSwipeRefreshLayout.setRefreshing(false);
         showToast(getString(R.string.error_server));
-    }
-
-    private void setWorkingOrders(OrdersResponse mOrdersResponse) {
-        mSwipeRefreshLayout.setRefreshing(false);
-        mProgressBar.setVisibility(View.GONE);
-        mActivity.hideProgressBar();
-        llHome.setVisibility(View.VISIBLE);
-
-        if (!mOrdersResponse.success) {
-            tvPendingOrders.setText(String.valueOf(mPendingOrdersList.size()));
-            tvCompletedOrders.setText(String.valueOf(mWorkingOrdersList.size()));
-            return;
-        }
-
-        mWorkingOrdersList.clear();
-        OrdersResponse.Data mOrdersData = mOrdersResponse.data;
-        mWorkingOrdersList.addAll(mOrdersData.orderList);
-        mHomeAdapter.notifyDataSetChanged();
-
-        tvPendingOrders.setText(String.valueOf(mPendingOrdersList.size()));
-        tvCompletedOrders.setText(String.valueOf(mWorkingOrdersList.size()));
-
-        if (mPendingOrdersList.size() == 0) {
-            tvNoOrders.setVisibility(View.VISIBLE);
-            tvNoOrders.setText(getString(R.string.prompt_empty_pending_orders));
-        }
-
-        if (!mOrdersResponse.success) {
-            showToast(mOrdersResponse.msg);
-        }
-    }
-
-    @OnClick(R.id.tvNewOrders)
-    public void newOrders() {
-        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
-        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
-        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
-
-        //mHomeAdapter = new HomeAdapter(mContext, mPendingOrdersList);
-        mRecyclerOrders.setAdapter(mNewOrderAdapter);
-
-        tvNoOrders.setVisibility(mPendingOrdersList.size() == 0 ? View.VISIBLE : View.GONE);
-        tvNoOrders.setText(getString(R.string.prompt_empty_pending_orders));
-    }
-
-    @OnClick(R.id.tvWorkingOrders)
-    public void workingOrders() {
-        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
-        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
-        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
-
-        //mHomeAdapter = new HomeAdapter(mContext, mWorkingOrdersList);
-        mRecyclerOrders.setAdapter(mHomeAdapter);
-
-        tvNoOrders.setVisibility(mWorkingOrdersList.size() == 0 ? View.VISIBLE : View.GONE);
-        tvNoOrders.setText(getString(R.string.prompt_empty_working_orders));
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        if (!mActivity.isInternetActive()) {
-            connectionAlert();
-            return;
-        }
-        mSwipeRefreshLayout.setRefreshing(true);
-        getPendingOrders();
-    }
-
-    private void connectionAlert() {
-        AlertDialog alert = Utils.createAlert(mActivity, getString(R.string.error_connection_down), getString(R.string.error_internet_disconnected));
-
-        alert.setButton(Dialog.BUTTON_POSITIVE, getString(R.string.prompt_retry), (dialogInterface, i) -> {
-            if (!mActivity.isInternetActive()) {
-                connectionAlert();
-                return;
-            }
-
-            mSwipeRefreshLayout.setRefreshing(true);
-            getPendingOrders();
-
-        });
-        alert.show();
     }
 
     @Override

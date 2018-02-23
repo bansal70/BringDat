@@ -1,121 +1,168 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/parentLL"
-    android:layout_width="match_parent"
+<ScrollView android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:visibility="gone"
-    android:orientation="vertical">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <LinearLayout
+        android:id="@+id/parentLL"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="@dimen/_10sdp"
-        android:orientation="horizontal">
+        android:visibility="gone"
+        android:orientation="vertical">
 
         <TextView
-            android:layout_width="0dp"
+            android:id="@+id/tvConnectedAddress"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:text="@string/prompt_online_ordering"
-            android:textAllCaps="false"
-            android:layout_weight="3"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_13sdp" />
-
-        <android.support.v7.widget.SwitchCompat
-            android:id="@+id/switchOnlineOrdering"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"/>
-
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#acacac" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="start"
-        android:layout_margin="@dimen/_10sdp"
-        android:orientation="vertical">
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:visibility="gone"
+            android:textColor="@color/colorDarkGreen"
+            android:padding="@dimen/_10sdp"
+            android:textSize="@dimen/_14sdp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_10sdp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/prompt_auto_printing"
+                android:textAllCaps="false"
+                android:layout_weight="3"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_13sdp" />
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchAutoPrint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#acacac" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_10sdp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/prompt_online_ordering"
+                android:textAllCaps="false"
+                android:layout_weight="3"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_13sdp" />
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchOnlineOrdering"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#acacac" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_margin="@dimen/_10sdp"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="start"
+                    android:layout_weight="1"
+                    android:text="@string/prompt_printing"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_13sdp" />
+
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/switchPrinting"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:layout_weight="1" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/_10sdp">
+
+                <CheckBox
+                    android:id="@+id/cbCODOrder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/prompt_cod_orders"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_13sdp" />
+
+                <CheckBox
+                    android:id="@+id/cbPrepaidOrder"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/prompt_prepaid_orders"
+                    android:clickable="false"
+                    android:focusable="false"
+                    android:textColor="@color/black"
+                    android:textSize="@dimen/_13sdp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/colorGray" />
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/_10sdp">
 
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:layout_weight="1"
-                android:text="@string/prompt_printing"
+                android:text="@string/prompt_sounds"
                 android:textColor="@color/black"
-                android:textSize="@dimen/_13sdp" />
-
-            <android.support.v7.widget.SwitchCompat
-                android:id="@+id/switchPrinting"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clickable="false"
-                android:focusable="false"
-                android:layout_weight="1" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/_10sdp">
-
-            <CheckBox
-                android:id="@+id/cbCODOrder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/prompt_cod_orders"
-                android:clickable="false"
-                android:focusable="false"
-                android:textColor="@color/black"
-                android:textSize="@dimen/_13sdp" />
-
-            <CheckBox
-                android:id="@+id/cbPrepaidOrder"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="@string/prompt_prepaid_orders"
-                android:clickable="false"
-                android:focusable="false"
-                android:textColor="@color/black"
-                android:textSize="@dimen/_13sdp" />
-
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/colorGray" />
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/_10sdp">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="start"
-            android:text="@string/prompt_sounds"
-            android:textColor="@color/black"
-            android:textSize="@dimen/_13sdp"
-            android:textStyle="bold" />
+                android:textSize="@dimen/_13sdp"
+                android:textStyle="bold" />
 
             <RadioGroup
                 android:id="@+id/mFirstGroup"
@@ -167,51 +214,119 @@
 
             </RadioGroup>
 
+        </LinearLayout>
 
-    </LinearLayout>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#acacac" />
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="#acacac" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_10sdp"
+            android:orientation="horizontal">
 
-    <Button
-        android:id="@+id/btChangeAlias"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:layout_margin="@dimen/_13sdp"
-        android:background="@drawable/shape_button_orange_rounded"
-        android:text="@string/prompt_switch_logger"
-        android:textAllCaps="true"
-        android:textColor="@color/White"
-        android:textSize="@dimen/_13sdp"
-        android:textStyle="bold" />
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/prompt_bluetooth_printer"
+                android:textAllCaps="false"
+                android:layout_weight="3"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_13sdp" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_gravity="bottom"
-        android:gravity="bottom"
-        android:orientation="vertical"
-        tools:ignore="UseCompoundDrawables">
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchBtPrinter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:focusable="false"
+                android:clickable="false"
+                android:layout_weight="1"/>
 
-        <ImageView
-            android:layout_width="@dimen/_40sdp"
-            android:layout_height="@dimen/_40sdp"
-            android:layout_gravity="center_horizontal"
-            android:src="@drawable/logo"
-            android:contentDescription="@string/app_name"/>
+        </LinearLayout>
 
-        <TextView
-            android:id="@+id/tvAppVersion"
-            android:layout_width="wrap_content"
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#acacac" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_10sdp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/prompt_network_printer"
+                android:textAllCaps="false"
+                android:layout_weight="3"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_13sdp" />
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchNwPrinter"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btChangeAlias"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="1.0"
-            android:textColor="@color/light_black_color"
-            android:textSize="21sp" />
+            android:layout_margin="@dimen/_13sdp"
+            android:background="@drawable/shape_button_orange_rounded"
+            android:text="@string/prompt_switch_logger"
+            android:textAllCaps="true"
+            android:textColor="@color/White"
+            android:textSize="@dimen/_13sdp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="bottom"
+            android:gravity="bottom"
+            android:layout_weight="1"
+            android:visibility="gone"
+            android:orientation="vertical"
+            tools:ignore="UseCompoundDrawables">
+
+            <ImageView
+                android:layout_width="@dimen/_40sdp"
+                android:layout_height="@dimen/_40sdp"
+                android:layout_gravity="center_horizontal"
+                android:src="@drawable/logo"
+                android:contentDescription="@string/app_name"/>
+
+            <TextView
+                android:id="@+id/tvAppVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textColor="@color/light_black_color"
+                android:textSize="21sp" />
+
+            <TextView
+                android:id="@+id/tvAppDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/prompt_version_date"
+                android:textColor="@color/light_black_color"
+                android:textSize="21sp" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-</LinearLayout>
+</ScrollView>

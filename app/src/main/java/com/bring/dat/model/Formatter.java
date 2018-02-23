@@ -1,6 +1,6 @@
 package com.bring.dat.model;
 
-/**
+/*
  * Created by win 10 on 12/26/2017.
  */
 

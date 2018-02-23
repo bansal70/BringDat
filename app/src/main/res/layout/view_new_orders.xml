@@ -34,6 +34,7 @@
                 android:textSize="@dimen/_18sdp"
                 android:textStyle="bold"
                 android:maxLines="1"
+                android:gravity="center"
                 app:autoSizeTextType="uniform"
                 android:textAllCaps="true"
                 android:layout_marginLeft="@dimen/_5sdp"

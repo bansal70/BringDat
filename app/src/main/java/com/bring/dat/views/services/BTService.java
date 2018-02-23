@@ -40,6 +40,10 @@ public class BTService  extends Service {
         IntentFilter filter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mReceiver, filter);
 
+        if (Utils.isServiceRunning(mContext, WFService.class)) {
+            stopService(new Intent(mContext, WFService.class));
+        }
+
         checkBT();
 
         return Service.START_STICKY;
@@ -136,6 +140,7 @@ public class BTService  extends Service {
                 switch (msg.arg1) {
                     case BluetoothService.STATE_CONNECTED:
                         Utils.showToast(mContext, getString(R.string.success_connection));
+                        BDPreferences.putString(mContext, Constants.LAST_PRINTER_CONNECTED, Constants.PRINTER_BLUETOOTH);
                         break;
                     case BluetoothService.STATE_CONNECTING:
                         //     Timber.e("Bluetooth is connecting");
@@ -148,7 +153,7 @@ public class BTService  extends Service {
                 }
                 break;
             case BluetoothService.MESSAGE_CONNECTION_LOST:
-                connectBT();
+                //connectBT();
                 break;
             case BluetoothService.MESSAGE_UNABLE_CONNECT:
                 //connectBT();
@@ -169,15 +174,8 @@ public class BTService  extends Service {
             if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)) {
                 final int state = intent.getIntExtra(BluetoothAdapter.EXTRA_STATE, BluetoothAdapter.ERROR);
                 switch (state) {
-                    case BluetoothAdapter.STATE_OFF:
-                        //setBluetooth();
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_OFF:
-                        break;
                     case BluetoothAdapter.STATE_ON:
                         connectBT();
-                        break;
-                    case BluetoothAdapter.STATE_TURNING_ON:
                         break;
                 }
             }
@@ -189,6 +187,12 @@ public class BTService  extends Service {
         super.onDestroy();
 
         unregisterReceiver(mReceiver);
+
+        if (mService != null) {
+            mService.stop();
+            mService.cancelDiscovery();
+        }
+
     }
 
 }

@@ -4,10 +4,14 @@ package com.bring.dat.model;
  * Created by rishav on 12/27/2017.
  */
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.bluetooth.BluetoothAdapter;
 import android.content.ActivityNotFoundException;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.ParcelUuid;
 import android.support.v7.app.AlertDialog;
 
 import com.bring.dat.R;
@@ -15,9 +19,15 @@ import com.bring.dat.model.pojo.Cart;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.views.MainActivity;
+import com.bring.dat.views.services.AlarmService;
 import com.bring.dat.views.services.BTService;
 import com.bring.dat.views.services.BluetoothService;
+import com.epson.epos2.printer.Printer;
+import com.epson.epos2.printer.PrinterStatusInfo;
 
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 
 import retrofit2.HttpException;
@@ -35,18 +45,25 @@ public class AppUtils {
                 .setPositiveButton(android.R.string.yes, (dialogInterface, i) -> {
                     dialogInterface.dismiss();
 
-                    BDPreferences.clearPref(mActivity);
-                    mActivity.startActivity(new Intent(mActivity, MainActivity.class));
-                    mActivity.finish();
-                    Intent intent = new Intent(mActivity, BTService.class);
-                    mActivity.stopService(intent);
-
+                    openMain(mActivity);
                     Utils.showToast(mActivity, mActivity.getString(R.string.prompt_logged_out));
                 })
                 .setNegativeButton(android.R.string.no, (dialogInterface, i) -> dialogInterface.dismiss());
 
         AlertDialog alertDialog = alertBuilder.create();
         alertDialog.show();
+    }
+
+    public static void openMain(Activity mActivity) {
+        BDPreferences.clearPref(mActivity);
+        mActivity.startActivity(new Intent(mActivity, MainActivity.class));
+        mActivity.finish();
+
+        Intent intent = new Intent(mActivity, BTService.class);
+        mActivity.stopService(intent);
+
+        Intent alarmIntent = new Intent(mActivity, AlarmService.class);
+        mActivity.stopService(alarmIntent);
     }
 
     public static void serverError(Throwable throwable) {
@@ -59,11 +76,11 @@ public class AppUtils {
     public static String userAddress(Order mOrder) {
         String address = "";
 
-        if (!mOrder.deliverydoornumber.isEmpty()) {
-            address = mOrder.deliverydoornumber + ", ";
-        }
         if (!mOrder.deliverystreet.isEmpty()) {
-            address += mOrder.deliverystreet + ", ";
+            address = mOrder.deliverystreet + "\n";
+        }
+        if (!mOrder.deliverydoornumber.isEmpty()) {
+            address += "Apt/Suite/Bldg# " + mOrder.deliverydoornumber + "\n";
         }
         if (!mOrder.deliverylandmark.isEmpty()) {
             address += mOrder.deliverylandmark + ", ";
@@ -355,5 +372,94 @@ public class AppUtils {
         }
     }
 
+    @SuppressLint("PrivateApi")
+    public void fetchUUID(Context mContext) {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+
+        try {
+            Method getUuidsMethod = BluetoothAdapter.class.getDeclaredMethod("getUuids", null);
+
+            ParcelUuid[] uuids = (ParcelUuid[]) getUuidsMethod.invoke(adapter, null);
+
+            for (ParcelUuid uuid : uuids) {
+                Timber.e("UUID: %s", uuid.getUuid().toString());
+                BDPreferences.putString(mContext, "UUID", uuid.getUuid().toString());
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    public static BigDecimal roundTwoDecimal(float price) {
+        BigDecimal bill = new BigDecimal(price);
+        return bill.setScale(2, RoundingMode.HALF_UP);
+    }
+
+    public static String makeErrorMessage(Context mContext, PrinterStatusInfo status) {
+        String msg = "";
+
+        if (status.getOnline() == Printer.FALSE) {
+            msg += mContext.getString(R.string.handlingmsg_err_offline);
+        }
+        if (status.getConnection() == Printer.FALSE) {
+            msg += mContext.getString(R.string.handlingmsg_err_no_response);
+        }
+        if (status.getCoverOpen() == Printer.TRUE) {
+            msg += mContext.getString(R.string.handlingmsg_err_cover_open);
+        }
+        if (status.getPaper() == Printer.PAPER_EMPTY) {
+            msg += mContext.getString(R.string.handlingmsg_err_receipt_end);
+        }
+        if (status.getPaperFeed() == Printer.TRUE || status.getPanelSwitch() == Printer.SWITCH_ON) {
+            msg += mContext.getString(R.string.handlingmsg_err_paper_feed);
+        }
+        if (status.getErrorStatus() == Printer.MECHANICAL_ERR || status.getErrorStatus() == Printer.AUTOCUTTER_ERR) {
+            msg += mContext.getString(R.string.handlingmsg_err_autocutter);
+            msg += mContext.getString(R.string.handlingmsg_err_need_recover);
+        }
+        if (status.getErrorStatus() == Printer.UNRECOVER_ERR) {
+            msg += mContext.getString(R.string.handlingmsg_err_unrecover);
+        }
+        if (status.getErrorStatus() == Printer.AUTORECOVER_ERR) {
+            if (status.getAutoRecoverError() == Printer.HEAD_OVERHEAT) {
+                msg += mContext.getString(R.string.handlingmsg_err_overheat);
+                msg += mContext.getString(R.string.handlingmsg_err_head);
+            }
+            if (status.getAutoRecoverError() == Printer.MOTOR_OVERHEAT) {
+                msg += mContext.getString(R.string.handlingmsg_err_overheat);
+                msg += mContext.getString(R.string.handlingmsg_err_motor);
+            }
+            if (status.getAutoRecoverError() == Printer.BATTERY_OVERHEAT) {
+                msg += mContext.getString(R.string.handlingmsg_err_overheat);
+                msg += mContext.getString(R.string.handlingmsg_err_battery);
+            }
+            if (status.getAutoRecoverError() == Printer.WRONG_PAPER) {
+                msg += mContext.getString(R.string.handlingmsg_err_wrong_paper);
+            }
+        }
+        if (status.getBatteryLevel() == Printer.BATTERY_LEVEL_0) {
+            msg += mContext.getString(R.string.handlingmsg_err_battery_real_end);
+        }
+
+        return msg;
+    }
+
+    public static void displayPrinterWarnings(Context mContext, PrinterStatusInfo status) {
+        String warningsMsg = "";
+
+        if (status == null) {
+            return;
+        }
+
+        if (status.getPaper() == Printer.PAPER_NEAR_END) {
+            warningsMsg += mContext.getString(R.string.handlingmsg_warn_receipt_near_end);
+        }
+
+        if (status.getBatteryLevel() == Printer.BATTERY_LEVEL_1) {
+            warningsMsg += mContext.getString(R.string.handlingmsg_warn_battery_near_end);
+        }
+
+        Utils.showToast(mContext, warningsMsg);
+    }
 
 }

@@ -16,6 +16,7 @@ import com.bring.dat.R;
 import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
+import com.bring.dat.model.NetworkPrinting;
 import com.bring.dat.model.Operations;
 import com.bring.dat.model.PrintReceipt;
 import com.bring.dat.model.Utils;
@@ -23,6 +24,7 @@ import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.views.AppBaseActivity;
 import com.bring.dat.views.OrderDetailsActivity;
+import com.bring.dat.views.services.BTService;
 
 import java.util.List;
 
@@ -184,7 +186,15 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
         notifyDataSetChanged();
 
         if (mOrderDetails.success) {
-            PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+            if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
+                NetworkPrinting networkPrinting = new NetworkPrinting(mActivity);
+                networkPrinting.printData(mActivity, mOrderDetails);
+            } else if (Utils.isServiceRunning(mContext, BTService.class)) {
+                PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+            } else {
+                Utils.showToast(mContext, mContext.getString(R.string.error_printer_unavailable));
+            }
+            //PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
         }
     }
 

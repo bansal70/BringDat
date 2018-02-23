@@ -11,4 +11,6 @@ public class Transaction {
     public boolean success;
     @SerializedName("msg")
     public String msg;
+    @SerializedName("authentication")
+    public String mAuthentication = "0";
 }

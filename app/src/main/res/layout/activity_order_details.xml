@@ -55,6 +55,49 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/couponsLL"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="gone"
+                android:layout_marginTop="@dimen/_5sdp"
+                android:layout_marginLeft="@dimen/_10sdp"
+                android:layout_marginRight="@dimen/_10sdp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/prompt_coupons"
+                        android:textAllCaps="true"
+                        android:textColor="@color/text_color_work_order"
+                        android:textSize="@dimen/_13sdp" />
+
+                    <TextView
+                        android:id="@+id/tvOfferName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/_13sdp"
+                        android:textColor="@color/black" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvOfferAmount"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:layout_weight="1"
+                    android:textSize="@dimen/_13sdp"
+                    android:textColor="@color/text_color_work_order"/>
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/_5sdp"
@@ -240,14 +283,7 @@
                 android:layout_height="4dp"
                 android:background="#bcbcbc" />
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="@dimen/_8sdp"
-                android:visibility="gone"
-                android:text="@string/prompt_order_instructions"
-                android:textColor="@color/text_color_work_order"
-                android:textSize="@dimen/_14sdp" />
+           <include layout="@layout/content_order_instructions"/>
 
             <android.support.v7.widget.CardView
                 android:id="@+id/cardPaymentType"
@@ -256,8 +292,6 @@
                 app:cardUseCompatPadding="true"
                 android:visibility="gone"
                 app:cardCornerRadius="@dimen/_5sdp"
-                android:layout_marginLeft="@dimen/_5sdp"
-                android:layout_marginRight="@dimen/_5sdp"
                 android:layout_marginTop="@dimen/_5sdp">
 
                 <LinearLayout
@@ -357,6 +391,8 @@
                 </LinearLayout>
 
             </android.support.v7.widget.CardView>
+
+            <include layout="@layout/content_order_log"/>
 
             <LinearLayout
                 android:id="@+id/cancelOrderLL"

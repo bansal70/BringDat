@@ -444,6 +444,19 @@ public class Utils {
         return str;
     }
 
+    public static String parseTimeToAMPM(String _24HourTime) {
+        try {
+            SimpleDateFormat _24HourSDF = new SimpleDateFormat("HH:mm", Locale.getDefault());
+            SimpleDateFormat _12HourSDF = new SimpleDateFormat("hh:mm a", Locale.getDefault());
+            Date _24HourDt = _24HourSDF.parse(_24HourTime);
+            return _12HourSDF.format(_24HourDt);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return null;
+    }
+
     public static double roundTwoDecimals(double d) {
         DecimalFormat twoDForm = new DecimalFormat("#.##");
         return Double.valueOf(twoDForm.format(d));
@@ -665,25 +678,20 @@ public class Utils {
     /**
      * Checks if the service with the given name is currently running on the device.
      *
-     * @param serviceName Fully qualified name of the server. <br/>
+     * @param serviceClass Fully qualified name of the server. <br/>
      *                    For e.g. nl.changer.myservice.name
      *                    *
      */
-    public static boolean isServiceRunning(Context ctx, String serviceName) {
-
-        if (serviceName == null)
-            throw new NullPointerException("Service name cannot be null");
-
-        ActivityManager manager = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
+    public static boolean isServiceRunning(Context mContext, Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager)mContext.getSystemService(Context.ACTIVITY_SERVICE);
+        assert manager != null;
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (service.service.getClassName().equals(serviceName)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
                 return true;
             }
         }
-
         return false;
     }
-
 
 
     /**

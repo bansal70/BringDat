@@ -12,6 +12,8 @@ public class OrdersResponse {
     public Boolean success;
     @SerializedName("msg")
     public String msg;
+    @SerializedName("authentication")
+    public String mAuthentication = "0";
     @SerializedName("totalpending")
     public String totalPending;
     @SerializedName("totalworking")

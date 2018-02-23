@@ -1,7 +1,6 @@
 package com.bring.dat.views.fragments;
 
 import android.app.Dialog;
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -26,7 +25,6 @@ import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrdersResponse;
 import com.bring.dat.views.adapters.HomeAdapter;
-import com.bring.dat.views.services.BTService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -104,10 +102,22 @@ public class HistoryFragment extends AppBaseFragment {
     private void initViews() {
         mRecyclerOrders.setLayoutManager(new LinearLayoutManager(mContext));
 
-        if (!mActivity.isServiceRunning(BTService.class)) {
-            Intent btIntent = new Intent(mContext, BTService.class);
-            mActivity.startService(btIntent);
-        }
+        /*String lastPrinter = BDPreferences.readString(mContext, Constants.LAST_PRINTER_CONNECTED);
+
+        switch (lastPrinter) {
+            case Constants.PRINTER_BLUETOOTH:
+                if (!mActivity.isServiceRunning(BTService.class)) {
+                    Intent btIntent = new Intent(mContext, BTService.class);
+                    mActivity.startService(btIntent);
+                }
+                break;
+            case Constants.PRINTER_WIFI:
+                if (!mActivity.isServiceRunning(WFService.class)) {
+                    Intent wfIntent = new Intent(mContext, WFService.class);
+                    mActivity.startService(wfIntent);
+                }
+                break;
+        }*/
 
         cardOrders.setVisibility(View.GONE);
         cardOrders2.setVisibility(View.GONE);
@@ -185,6 +195,11 @@ public class HistoryFragment extends AppBaseFragment {
                         mOrdersList.add(order);
                     }
                 }
+            }
+
+            if (mOrdersList.size() == 0) {
+                pagination.onNext(page);
+                mActivity.showDialog();
             }
 
             mHomeAdapter.notifyDataSetChanged();

@@ -4,6 +4,7 @@ import android.content.Context;
 
 import com.bring.dat.BuildConfig;
 import com.bring.dat.R;
+import com.bring.dat.views.services.NetworkChangeReceiver;
 
 import org.acra.ACRA;
 import org.acra.annotation.ReportsCrashes;
@@ -15,11 +16,14 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 public final class Application extends android.app.Application {
 
     public static String Font_Text = "Roboto-Regular.ttf";
+    private static Application mInstance;
 
     @Override
     public void onCreate() {
         super.onCreate();
         ACRA.init(this);
+        mInstance = this;
+
         if (BuildConfig.DEBUG) {
             Timber.plant(new Timber.DebugTree());
         }
@@ -33,6 +37,14 @@ public final class Application extends android.app.Application {
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
+    }
+
+    public static synchronized Application getInstance() {
+        return mInstance;
+    }
+
+    public void setConnectivityListener(NetworkChangeReceiver.NetworkChangeReceiverListener listener) {
+        NetworkChangeReceiver.connectivityReceiverListener = listener;
     }
 
 }

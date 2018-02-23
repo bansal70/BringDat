@@ -14,6 +14,8 @@ public class Reports {
     public String msg;
     @SerializedName("data")
     public Data data;
+    @SerializedName("authentication")
+    public String mAuthentication = "0";
 
     public static class Data {
         @SerializedName("tipAmount")

@@ -1,7 +1,12 @@
 package com.bring.dat.views.fragments;
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.bluetooth.BluetoothDevice;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -15,14 +20,19 @@ import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.TextView;
 
+import com.bring.dat.BuildConfig;
 import com.bring.dat.R;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
 import com.bring.dat.model.Operations;
 import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Settings;
+import com.bring.dat.views.DeviceListActivity;
 import com.bring.dat.views.HomeActivity;
+import com.bring.dat.views.services.BTService;
+import com.bring.dat.views.services.BluetoothService;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -32,6 +42,8 @@ import butterknife.OnTouch;
 import butterknife.Unbinder;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+
+import static com.bring.dat.views.AppBaseActivity.REQUEST_CONNECT_DEVICE;
 
 public class SettingsFragment extends AppBaseFragment{
 
@@ -73,8 +85,24 @@ public class SettingsFragment extends AppBaseFragment{
     @BindView(R.id.rbClock)
     RadioButton rbClock;
 
+    @BindView(R.id.switchBtPrinter)
+    SwitchCompat switchBtPrinter;
+
+    @BindView(R.id.switchNwPrinter)
+    SwitchCompat switchNwPrinter;
+
+    @BindView(R.id.switchAutoPrint)
+    SwitchCompat switchAutoPrint;
+
+    @BindView(R.id.tvAppVersion)
+    TextView tvAppVersion;
+
+    @BindView(R.id.tvConnectedAddress)
+    TextView tvConnectedAddress;
+
     String restId, token, soundType = "", onlineOrder, printingStatus, printingOptions;
     int mCheckedId;
+//    private WifiManager mWifiManager;
 
     @Nullable
     @Override
@@ -82,6 +110,26 @@ public class SettingsFragment extends AppBaseFragment{
         View view = inflater.inflate(R.layout.fragment_settings, container, false);
 
         unbinder = ButterKnife.bind(this, view);
+
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothDevice.ACTION_ACL_CONNECTED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
+        mActivity.registerReceiver(mReceiver, filter);
+      //  mWifiManager = (WifiManager)mContext.getApplicationContext().getSystemService(Context.WIFI_SERVICE);
+
+      /*  if (Utils.isServiceRunning(mContext, WFService.class) && WFService.isWifi()) {
+            switchNwPrinter.setChecked(true);
+            String ipAddress = BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS);
+            tvConnectedAddress.setText(String.format("%s %s", getString(R.string.prompt_ip_address), ipAddress));
+            tvConnectedAddress.setVisibility(View.VISIBLE);
+        }*/
+
+        if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
+            String ipAddress = BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS);
+            tvConnectedAddress.setText(String.format("%s %s", getString(R.string.prompt_ip_address), ipAddress));
+            tvConnectedAddress.setVisibility(View.VISIBLE);
+            switchNwPrinter.setChecked(true);
+        }
 
         initValues();
 
@@ -92,40 +140,20 @@ public class SettingsFragment extends AppBaseFragment{
         restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
         token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
 
-       /* // checking notification sound status
-        soundType = BDPreferences.readString(mContext, Constants.KEY_SOUND_TYPE);
-
-        switch (soundType) {
-            case Constants.SOUND_RINGING:
-                rbRinging.setChecked(true);
-                mCheckedId = R.id.rbRinging;
-                break;
-            case Constants.SOUND_BUZZER:
-                rbBuzzer.setChecked(true);
-                mCheckedId = R.id.rbBuzzer;
-                break;
-            case Constants.SOUND_EXPLO:
-                rbExplore.setChecked(true);
-                mCheckedId = R.id.rbExplore;
-                break;
-            case Constants.SOUND_OLD_SCHOOL:
-                rbClock.setChecked(true);
-                mCheckedId = R.id.rbClock;
-                break;
-        }
-
-        // Checking online order status
-        onlineOrder = BDPreferences.readString(mContext, Constants.KEY_ONLINE_ORDER);
-        switchOnlineOrdering.setChecked(onlineOrder.equals("0"));
-
-        // Checking printing status
-        printingStatus = BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE);
-        setPrintingType();*/
+        tvAppVersion.setText(BuildConfig.VERSION_NAME);
 
         if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
             btChangeAlias.setText(getString(R.string.prompt_switch_admin));
         } else {
             btChangeAlias.setText(getString(R.string.prompt_switch_logger));
+        }
+
+        if (BTService.mService != null && BTService.mService.getState() == BluetoothService.STATE_CONNECTED) {
+            switchBtPrinter.setChecked(true);
+        }
+
+        if (BDPreferences.readBoolean(mContext, Constants.AUTO_PRINT_TYPE)) {
+            switchAutoPrint.setChecked(true);
         }
 
         if (!mActivity.isInternetActive()) {
@@ -188,7 +216,6 @@ public class SettingsFragment extends AppBaseFragment{
 
         setSoundListeners();
     }
-
 
     @OnCheckedChanged(R.id.switchOnlineOrdering)
     public void onlineOrder(boolean checked) {
@@ -395,11 +422,108 @@ public class SettingsFragment extends AppBaseFragment{
         startActivity(intent);
     }
 
+    @OnTouch(R.id.switchAutoPrint)
+    public boolean autoPrinting() {
+        if (switchAutoPrint.isChecked()) {
+            switchAutoPrint.setChecked(false);
+            BDPreferences.putBoolean(mContext, Constants.AUTO_PRINT_TYPE, false);
+        }
+        else {
+            switchAutoPrint.setChecked(true);
+            BDPreferences.putBoolean(mContext, Constants.AUTO_PRINT_TYPE, true);
+        }
+
+        return false;
+    }
+
+    @OnTouch(R.id.switchNwPrinter)
+    boolean networkPrinter() {
+        if (switchNwPrinter.isChecked()) {
+            switchNwPrinter.setChecked(false);
+            BDPreferences.removeKey(mContext, Constants.KEY_IP_ADDRESS);
+          /*  if (Utils.isServiceRunning(mContext, WFService.class)) {
+                mActivity.stopService(new Intent(mContext, WFService.class));
+            }*/
+        }
+       /* if (!mWifiManager.isWifiEnabled()) {
+            mWifiManager.setWifiEnabled(true);
+        }*/
+
+        DialogNetworkPrinter dialogNetworkPrinter = new DialogNetworkPrinter();
+        dialogNetworkPrinter.show(getChildFragmentManager(), dialogNetworkPrinter.getTag());
+        dialogNetworkPrinter.setOnWifiConnectedListener(address -> {
+            switchNwPrinter.setChecked(true);
+            tvConnectedAddress.setVisibility(View.VISIBLE);
+            tvConnectedAddress.setText(String.format("%s %s", getString(R.string.prompt_ip_address), address));
+        });
+
+        /*dialogNetworkPrinter.setOnWifiConnectedListener(() -> {
+            switchNwPrinter.setChecked(true);
+            tvConnectedAddress.setVisibility(View.VISIBLE);
+            String ipAddress = BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS);
+            tvConnectedAddress.setText(String.format("%s %s", getString(R.string.prompt_ip_address), ipAddress));
+        });*/
+
+        return false;
+    }
+
+    @OnTouch(R.id.switchBtPrinter)
+    boolean bluetoothPrinter() {
+        if (switchBtPrinter.isChecked()) {
+            Intent i = new Intent(mContext, BTService.class);
+            mActivity.stopService(i);
+            switchBtPrinter.setChecked(false);
+        } else {
+            Intent intent = new Intent(mContext, DeviceListActivity.class);
+            startActivityForResult(intent, REQUEST_CONNECT_DEVICE);
+        }
+
+        return false;
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        switch (requestCode) {
+            case REQUEST_CONNECT_DEVICE:
+                if (resultCode == Activity.RESULT_OK) {
+                    if (data.getExtras() == null) {
+                        return;
+                    }
+                    String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
+                    BDPreferences.putString(mContext, Constants.KEY_BT_ADDRESS, address);
+
+                    Intent intent = new Intent(mContext, BTService.class);
+                    mActivity.startService(intent);
+                }
+                break;
+        }
+    }
+
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            //BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+            if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
+                switchBtPrinter.setChecked(true);
+                tvConnectedAddress.setVisibility(View.VISIBLE);
+                String btAddress = BDPreferences.readString(mContext, Constants.KEY_BT_ADDRESS);
+                tvConnectedAddress.setText(String.format("%s %s", getString(R.string.prompt_bluetooth_address), btAddress));
+                switchNwPrinter.setChecked(false);
+                BDPreferences.removeKey(mContext, Constants.KEY_IP_ADDRESS);
+            }
+            if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+                switchBtPrinter.setChecked(false);
+            }
+        }
+    };
+
     @Override
     public void onDestroy() {
         super.onDestroy();
 
         unbinder.unbind();
+        mActivity.unregisterReceiver(mReceiver);
     }
 
     private void connectionAlert() {
@@ -416,4 +540,5 @@ public class SettingsFragment extends AppBaseFragment{
         });
         alert.show();
     }
+
 }

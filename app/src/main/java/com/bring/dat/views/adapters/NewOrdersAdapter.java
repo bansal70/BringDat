@@ -55,10 +55,11 @@ public class NewOrdersAdapter extends RecyclerView.Adapter<NewOrdersAdapter.View
         } else {
             String time;
             if (Utils.getToday().equals(mOrder.deliverydate)) {
-                time = mContext.getString(R.string.prompt_time) + " " + "Today" + " " + mOrder.deliverytime;
+                time = mContext.getString(R.string.prompt_time) + " " + mContext.getString(R.string.prompt_today) + " " +
+                        Utils.parseTimeToAMPM(mOrder.deliverytime);
             } else {
-                time = mContext.getString(R.string.prompt_time) + " "
-                        + Utils.parseDateToMMdd(mOrder.deliverydate) + " " + mOrder.deliverytime;
+                time = mContext.getString(R.string.prompt_time) + " " + Utils.parseDateToMMdd(mOrder.deliverydate) + " " +
+                        Utils.parseTimeToAMPM(mOrder.deliverytime);
             }
             holder.tvDeliveryType.setText(time);
             holder.tvDeliveryType.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_clock, 0,0,0);

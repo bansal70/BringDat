@@ -28,5 +28,6 @@
     <color name="colorDarkRed">#F1411F</color>
     <color name="colorLightGray">#F9F9F9</color>
     <color name="redColor">#E50A1A</color>
+    <color name="colorBloodRed">#F80E1B</color>
 
 </resources>

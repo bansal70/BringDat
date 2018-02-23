@@ -1,43 +1,34 @@
 package com.bring.dat.views;
 
 import android.Manifest;
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.Dialog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
-import android.os.ParcelUuid;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.view.MenuItem;
-import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
 import com.bring.dat.R;
-import com.bring.dat.model.BDPreferences;
-import com.bring.dat.model.Constants;
+import com.bring.dat.model.Application;
 import com.bring.dat.model.ProgressBarHandler;
 import com.bring.dat.model.Utils;
 import com.bring.dat.model.network.APIClient;
 import com.bring.dat.model.network.ApiService;
 import com.bring.dat.views.services.BTService;
 import com.bring.dat.views.services.BluetoothService;
-
-import java.lang.reflect.Method;
+import com.bring.dat.views.services.NetworkChangeReceiver;
 
 import retrofit2.HttpException;
 import retrofit2.Response;
@@ -46,7 +37,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 import static android.content.pm.PackageManager.GET_META_DATA;
 
-public abstract class AppBaseActivity extends AppCompatActivity {
+public abstract class AppBaseActivity extends AppCompatActivity implements NetworkChangeReceiver.NetworkChangeReceiverListener{
 
     public Context mContext;
     private Dialog dialog;
@@ -59,7 +50,7 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
     public static final int REQUEST_CONNECT_DEVICE = 1;
     public BluetoothService mService;
-    BluetoothDevice con_dev = null;
+    NetworkChangeReceiver networkChangeReceiver;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -74,8 +65,12 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
         apiService = APIClient.getClient().create(ApiService.class);
 
+        networkChangeReceiver = new NetworkChangeReceiver();
+        IntentFilter intentFilter = new IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION);
+        this.registerReceiver(networkChangeReceiver, intentFilter);
+
         resetTitles();
-        fetchUUID();
+        Application.getInstance().setConnectivityListener(this);
 
         mService = BTService.mService;
     }
@@ -103,10 +98,6 @@ public abstract class AppBaseActivity extends AppCompatActivity {
 
     public void showToast(String msg) {
         Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-    }
-
-    public void showSnackBar(View layout, String msg) {
-        Snackbar.make(layout, msg, Snackbar.LENGTH_LONG).show();
     }
 
     public boolean isInternetActive() {
@@ -137,49 +128,6 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         dismissDialog();
         hideProgressBar();
         showToast(getString(R.string.error_server));
-    }
-
-    @SuppressLint("PrivateApi")
-    public void fetchUUID() {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-
-        try {
-            Method getUuidsMethod = BluetoothAdapter.class.getDeclaredMethod("getUuids", null);
-
-            ParcelUuid[] uuids = (ParcelUuid[]) getUuidsMethod.invoke(adapter, null);
-
-            for (ParcelUuid uuid : uuids) {
-                Timber.e("UUID: %s", uuid.getUuid().toString());
-                BDPreferences.putString(mContext, "UUID", uuid.getUuid().toString());
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        switch (requestCode) {
-            case REQUEST_CONNECT_DEVICE:
-                mService = BTService.mService;
-                if (resultCode == Activity.RESULT_OK) {
-                    String address = data.getExtras().getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
-                    BDPreferences.putString(mContext, Constants.KEY_BT_ADDRESS, address);
-                    mService.stop();
-                    /*con_dev = mService.getDevByMac(address);
-
-                    mService.connect(con_dev);*/
-                }
-                break;
-
-            case REQUEST_PRINT_RECEIPT:
-                if (resultCode == Activity.RESULT_OK) {
-                    showToast("Receipt printed");
-                } else {
-                    showToast("Failed to print the receipt");
-                }
-                break;
-        }
     }
 
     public boolean isServiceRunning(Class<?> serviceClass) {
@@ -221,13 +169,13 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack("");
-        transaction.commit();
+        transaction.commitAllowingStateLoss();
     }
 
     public void  goToHomeFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
-        transaction.addToBackStack("Home").commit();
+        transaction.addToBackStack("Home").commitAllowingStateLoss();
     }
 
     private void resetTitles() {
@@ -263,5 +211,21 @@ public abstract class AppBaseActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(mItem);
     }
 
+    @Override
+    public void onNetworkConnectionChanged(boolean isConnected) {
+        Dialog dialog = Utils.createDialog(mContext, R.layout.dialog_internet);
 
+        if (!isConnected) {
+            if (!isFinishing() && !dialog.isShowing()) {
+                dialog.show();
+            }
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        unregisterReceiver(networkChangeReceiver);
+    }
 }

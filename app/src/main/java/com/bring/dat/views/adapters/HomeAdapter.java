@@ -17,6 +17,7 @@ import com.bring.dat.R;
 import com.bring.dat.model.AppUtils;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
+import com.bring.dat.model.NetworkPrinting;
 import com.bring.dat.model.Operations;
 import com.bring.dat.model.PrintReceipt;
 import com.bring.dat.model.Utils;
@@ -26,6 +27,7 @@ import com.bring.dat.model.pojo.Settings;
 import com.bring.dat.views.AppBaseActivity;
 import com.bring.dat.views.OrderDetailsActivity;
 import com.bring.dat.views.fragments.HomeFragment;
+import com.bring.dat.views.services.BTService;
 
 import java.util.List;
 
@@ -72,7 +74,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
     @Override
     public void onBindViewHolder(HomeAdapter.ViewHolder holder, int position) {
         Order mOrder = mListOrderDetails.get(position);
-        holder.tvOrderTime.setText(String.format("%s", mOrder.orderdate));
+        holder.tvOrderTime.setText(String.format("%s %s", Utils.parseDateToMMddYY(mOrder.deliverydate), mOrder.orderdate));
         holder.tvPersonName.setText(String.format("%s %s", mOrder.customername, mOrder.customerlastname));
         holder.tvOrderPhone.setText(mOrder.customercellphone);
         holder.tvPaymentType.setText(mOrder.paymentType);
@@ -113,7 +115,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         if (BDPreferences.readString(mContext, Constants.KEY_PRINTING_OPTION).equals("1")) {
             switch (BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE)) {
                 case Constants.PRINTING_PREPAID:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID)) {
+                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC)) {
                         holder.btPrint.setVisibility(View.VISIBLE);
                     } else {
                         holder.btPrint.setVisibility(View.GONE);
@@ -129,7 +131,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
                     break;
 
                 case Constants.PRINTING_BOTH:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
+                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC)) {
                         holder.btPrint.setVisibility(View.VISIBLE);
                     } else {
                         holder.btPrint.setVisibility(View.GONE);
@@ -260,7 +262,16 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         notifyDataSetChanged();
 
         if (mOrderDetails.success) {
-            PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+            if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
+                NetworkPrinting networkPrinting = new NetworkPrinting(mActivity);
+                networkPrinting.printData(mActivity, mOrderDetails);
+            } else if (Utils.isServiceRunning(mContext, BTService.class)) {
+                PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
+            } else {
+                Utils.showToast(mContext, mContext.getString(R.string.error_printer_unavailable));
+            }
+            /*mContext.startActivity(new Intent(mContext, ReceiptActivity.class)
+            .putExtra("data", new Gson().toJson(mOrderDetails)));*/
         }
     }
 
@@ -333,7 +344,6 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         dialogTime.findViewById(R.id.bt15min).setOnClickListener(view -> updateTime(15));
         dialogTime.findViewById(R.id.bt45min).setOnClickListener(view -> updateTime(45));
         dialogTime.findViewById(R.id.bt60min).setOnClickListener(view -> updateTime(60));
-
         dialogTime.findViewById(R.id.btCancel).setOnClickListener(view -> dialogTime.dismiss());
 
         dialogTime.show();

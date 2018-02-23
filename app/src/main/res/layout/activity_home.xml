@@ -9,6 +9,7 @@
     tools:openDrawer="start">
 
     <LinearLayout
+        android:id="@+id/parentLL"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -35,6 +36,30 @@
         app:itemTextColor="@color/colorWhite"
         app:itemIconTint="@color/colorWhite"
         app:menu="@menu/activity_home_drawer"
-        app:headerLayout="@layout/nav_header_home"/>
+        app:headerLayout="@layout/nav_header_home" >
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:padding="@dimen/_10sdp"
+            android:orientation="vertical">
+
+            <android.support.v7.widget.AppCompatTextView
+                android:id="@+id/tvAppVersion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:maxLines="1"
+                android:textStyle="bold"
+                app:autoSizeTextType="uniform"
+                android:paddingLeft="@dimen/_5sdp"
+                android:paddingRight="@dimen/_5sdp"
+                android:textColor="@color/White"
+                android:textSize="@dimen/_15sdp"/>
+
+        </LinearLayout>
+
+    </android.support.design.widget.NavigationView>
 
 </android.support.v4.widget.DrawerLayout>

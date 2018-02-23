@@ -38,7 +38,7 @@
             android:id="@+id/tvToppings"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
+            android:visibility="visible"
             android:textSize="@dimen/_12sdp"/>
 
         <LinearLayout

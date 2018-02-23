@@ -69,15 +69,18 @@
                 android:layout_marginLeft="@dimen/_8sdp"
                 android:layout_marginStart="@dimen/_8sdp"
                 android:textColor="@color/colorBlack"
-                android:textSize="@dimen/_12sdp" />
+                android:textSize="@dimen/_14sdp" />
 
-            <TextView
+            <android.support.v7.widget.AppCompatTextView
                 android:id="@+id/tvOrderStatus"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:gravity="end"
                 android:text="@string/processing"
+                android:maxLines="1"
+                android:textAllCaps="true"
+                app:autoSizeTextType="uniform"
                 android:textColor="@color/colorGreen"
                 android:textSize="@dimen/_14sdp"
                 android:textStyle="normal" />
@@ -110,13 +113,16 @@
                         android:contentDescription="@null"
                         android:src="@drawable/maps_and_flags" />
 
-                    <TextView
+                    <android.support.v7.widget.AppCompatTextView
                         android:id="@+id/tvAddress"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/_25sdp"
                         android:textColor="@color/text_color_work_order"
                         android:textSize="@dimen/_12sdp"
+                        android:maxLines="3"
+                        app:autoSizeTextType="uniform"
+                        app:autoSizeStepGranularity="1dp"
                         android:layout_gravity="start|center"
                         android:layout_marginStart="@dimen/_25sdp"/>
 
@@ -320,7 +326,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginLeft="@dimen/_1sdp"
-                        android:text="@string/prompt_received_time"
+                        android:text="@string/prompt_date_time"
                         android:textSize="@dimen/_12sdp"
                         android:layout_marginStart="@dimen/_1sdp" />
 
