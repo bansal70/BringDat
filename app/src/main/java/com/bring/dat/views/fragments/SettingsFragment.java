@@ -208,7 +208,9 @@ public class SettingsFragment extends AppBaseFragment{
                 break;
         }
 
+        switchAutoPrint.setChecked(mData.autoPrint.equals("1"));
         switchPrinting.setChecked(mData.printingOption.equals("1"));
+        BDPreferences.putBoolean(mContext, Constants.AUTO_PRINT_TYPE, mData.autoPrint.equals("1"));
 
         printingStatus = mData.printingType;
         printingOptions = mData.printingOption;
@@ -424,17 +426,41 @@ public class SettingsFragment extends AppBaseFragment{
 
     @OnTouch(R.id.switchAutoPrint)
     public boolean autoPrinting() {
+        String mStatus;
         if (switchAutoPrint.isChecked()) {
-            switchAutoPrint.setChecked(false);
-            BDPreferences.putBoolean(mContext, Constants.AUTO_PRINT_TYPE, false);
+            mStatus = "0";
+        } else {
+            mStatus = "1";
         }
-        else {
-            switchAutoPrint.setChecked(true);
-            BDPreferences.putBoolean(mContext, Constants.AUTO_PRINT_TYPE, true);
-        }
+
+        updateAutoPrintStatusApi(mStatus);
 
         return false;
     }
+
+    private void updateAutoPrintStatusApi(String status) {
+        mActivity.showDialog();
+        apiService.updateAutoPrinting(Operations.updateAutoPrintStatus(restId, status, token))
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .onErrorResumeNext(throwable -> {
+                    mActivity.serverError();
+                })
+                .doOnNext(this::setAutoPrintingStatus)
+                .doOnError(mActivity::serverError)
+                .subscribe();
+    }
+
+    private void setAutoPrintingStatus(Settings mSettings) {
+        mActivity.dismissDialog();
+        if (mSettings.success) {
+            switchAutoPrint.setChecked(mSettings.mAutoPrint.equals("1"));
+            BDPreferences.putBoolean(mContext, Constants.AUTO_PRINT_TYPE, mSettings.mAutoPrint.equals("1"));
+        } else {
+            showToast(mSettings.msg);
+        }
+    }
+
 
     @OnTouch(R.id.switchNwPrinter)
     boolean networkPrinter() {

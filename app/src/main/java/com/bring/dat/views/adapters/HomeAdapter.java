@@ -1,8 +1,10 @@
 package com.bring.dat.views.adapters;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
@@ -10,7 +12,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import com.bring.dat.R;
@@ -23,11 +24,12 @@ import com.bring.dat.model.PrintReceipt;
 import com.bring.dat.model.Utils;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
-import com.bring.dat.model.pojo.Settings;
 import com.bring.dat.views.AppBaseActivity;
 import com.bring.dat.views.OrderDetailsActivity;
 import com.bring.dat.views.fragments.HomeFragment;
+import com.bring.dat.views.fragments.UpdateStatusDialogFragment;
 import com.bring.dat.views.services.BTService;
+import com.google.gson.Gson;
 
 import java.util.List;
 
@@ -42,27 +44,30 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
     private Context mContext;
     private List<Order> mListOrderDetails;
     private AppBaseActivity mActivity;
-    private Dialog dialogOrder, dialogTime;
-    private String mOrderId = "", orderStatus, mOrderTime;
+   /* private Dialog  dialogTime;
+    private String mOrderId = "", orderStatus, mOrderTime;*/
 
-    @BindView(R.id.btPending)
+   /* @BindView(R.id.btPending)
     Button btPending;
 
     @BindView(R.id.btWorkingTime)
     Button btWorkingTime;
 
     @BindView(R.id.tvOrderCurrentStatus)
-    TextView tvOrderCurrentStatus;
+    TextView tvOrderCurrentStatus;*/
 
-    private int mPosition;
+    private NetworkPrinting networkPrinting;
+
+    //private int mPosition;
 
     public HomeAdapter(Context mContext, List<Order> mListOrderDetails) {
         this.mContext = mContext;
         this.mListOrderDetails = mListOrderDetails;
         mActivity = (AppBaseActivity) mContext;
+        networkPrinting = new NetworkPrinting(mActivity);
 
-        dialogOrder = Utils.createDialog(mContext, R.layout.dialog_order_status);
-        ButterKnife.bind(this, dialogOrder);
+        //dialogOrder = Utils.createDialog(mContext, R.layout.dialog_order_status);
+        //ButterKnife.bind(this, dialogOrder);
     }
 
     @Override
@@ -102,7 +107,27 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         holder.tvOrderStatus.setText(mOrderStatus);
         holder.tvOrderStatus.setTextColor(color);
         holder.tvOrderPrice.setText(String.format("%s%s", Constants.CURRENCY, mOrder.ordertotalprice));
-        holder.tvDate.setText(mOrder.deliverytime);
+
+
+        if (mOrder.deliverytime.equalsIgnoreCase("ASAP")) {
+            holder.tvDate.setText(mOrder.deliverytime);
+            holder.tvDate.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+            holder.tvDate.setTextColor(ContextCompat.getColor(mContext, R.color.colorBlack));
+            holder.tvDate.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_clock, 0,0,0);
+        } else {
+            holder.tvDate.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorBloodRed));
+            holder.tvDate.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+            holder.tvDate.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_clock_white, 0,0,0);
+            String time;
+            if (Utils.getToday().equals(mOrder.deliverydate)) {
+                time = mContext.getString(R.string.prompt_today) + " " + Utils.parseTimeToAMPM(mOrder.deliverytime);
+            } else {
+                time = Utils.parseDateToMMdd(mOrder.deliverydate) + " " + Utils.parseTimeToAMPM(mOrder.deliverytime);
+            }
+            holder.tvDate.setText(time);
+        }
+
+        //holder.tvDate.setText(mOrder.deliverytime);
 
         if (mOrder.order_print_status.equals("0")) {
             holder.btPrint.setText(mContext.getString(R.string.prompt_print));
@@ -115,7 +140,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         if (BDPreferences.readString(mContext, Constants.KEY_PRINTING_OPTION).equals("1")) {
             switch (BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE)) {
                 case Constants.PRINTING_PREPAID:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC)) {
+                    if (!mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
                         holder.btPrint.setVisibility(View.VISIBLE);
                     } else {
                         holder.btPrint.setVisibility(View.GONE);
@@ -131,11 +156,12 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
                     break;
 
                 case Constants.PRINTING_BOTH:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC)) {
+                    /*if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC)) {
                         holder.btPrint.setVisibility(View.VISIBLE);
                     } else {
                         holder.btPrint.setVisibility(View.GONE);
-                    }
+                    }*/
+                    holder.btPrint.setVisibility(View.VISIBLE);
                     break;
             }
         } else {
@@ -196,8 +222,8 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
             itemView.setOnClickListener(view -> {
                 Order mOrder = mListOrderDetails.get(getAdapterPosition());
 
-                mContext.startActivity(new Intent(mContext, OrderDetailsActivity.class)
-                        .putExtra("orderId", mOrder.orderid));
+                ((Activity)mContext).startActivityForResult(new Intent(mContext, OrderDetailsActivity.class)
+                        .putExtra("orderId", mOrder.orderid), 101);
             });
         }
 
@@ -210,10 +236,15 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         @OnClick(R.id.btChangeStatus)
         public void changeOrderStatus() {
             Order mOrder = mListOrderDetails.get(getAdapterPosition());
-            mOrderId = mOrder.orderid;
-            mPosition = getAdapterPosition();
 
-            if (mOrder.status.contains("pending")) {
+            Bundle bundle = new Bundle();
+            bundle.putString(Constants.ORDER_DATA, new Gson().toJson(mOrder));
+            UpdateStatusDialogFragment statusDialogFragment = new UpdateStatusDialogFragment();
+            statusDialogFragment.setArguments(bundle);
+            statusDialogFragment.show(mActivity.getSupportFragmentManager(), statusDialogFragment.getTag());
+            statusDialogFragment.setOnDataChangeListener(() -> mActivity.goToHomeFragment(new HomeFragment()));
+
+            /*if (mOrder.status.contains("pending")) {
                 btWorkingTime.setVisibility(View.VISIBLE);
                 btPending.setVisibility(View.GONE);
             } else {
@@ -221,7 +252,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
                 btPending.setVisibility(View.VISIBLE);
             }
             tvOrderCurrentStatus.setText(mOrder.status);
-            dialogOrder.show();
+            dialogOrder.show();*/
         }
     }
 
@@ -263,7 +294,11 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
 
         if (mOrderDetails.success) {
             if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
-                NetworkPrinting networkPrinting = new NetworkPrinting(mActivity);
+
+                if (!networkPrinting.isPrinted) {
+                    Utils.showToast(mContext, "Please wait while we are processing your last receipt");
+                    return;
+                }
                 networkPrinting.printData(mActivity, mOrderDetails);
             } else if (Utils.isServiceRunning(mContext, BTService.class)) {
                 PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
@@ -275,11 +310,15 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         }
     }
 
-    @OnClick(R.id.btPending)
+    /*@OnClick(R.id.btPending)
     public void makeOrderPending() {
         orderStatus = "1"; // pending order
         mOrderTime = "";
-        updateOrder();
+
+        String message = mContext.getString(R.string.alert_move_order_to_pending);
+        DialogAlertFragment dialogAlertFragment = new DialogAlertFragment();
+        dialogAlertFragment.show(mActivity.getSupportFragmentManager(), message);
+        dialogAlertFragment.setOnAcceptListener(this::updateOrder);
     }
 
     @OnClick(R.id.btWorkingTime)
@@ -292,7 +331,11 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
     public void completeOrder() {
         orderStatus = "3"; // completed order
         mOrderTime = "";
-        updateOrder();
+
+        String message = mContext.getString(R.string.alert_move_order_to_complete);
+        DialogAlertFragment dialogAlertFragment = new DialogAlertFragment();
+        dialogAlertFragment.show(mActivity.getSupportFragmentManager(), message);
+        dialogAlertFragment.setOnAcceptListener(this::updateOrder);
     }
 
     @OnClick(R.id.btCancel)
@@ -314,14 +357,14 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         updateOrder();
         dialogOrder.dismiss();
         dialogTime.dismiss();
-    }
+    }*/
 
-    @OnClick(R.id.fabCancel)
+    /*@OnClick(R.id.fabCancel)
     public void cancelDialog() {
         dialogOrder.dismiss();
-    }
+    }*/
 
-    private void updateTime() {
+    /*private void updateTime() {
         mOrderTime = "";
         dialogTime = Utils.createDialog(mContext, R.layout.dialog_working_time);
         EditText editTime = dialogTime.findViewById(R.id.editTime);
@@ -396,7 +439,7 @@ public class HomeAdapter extends RecyclerView.Adapter<HomeAdapter.ViewHolder>{
         }
 
         notifyItemChanged(mPosition);
-        mActivity.goToFragment(new HomeFragment());
-    }
+        mActivity.goToHomeFragment(new HomeFragment());
+    }*/
 
 }

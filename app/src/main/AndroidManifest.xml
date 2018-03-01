@@ -8,6 +8,7 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
 
@@ -21,10 +22,12 @@
         android:theme="@style/AppTheme">
         <activity android:name=".views.SplashActivity">
             <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+            <meta-data android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
         <activity
             android:name=".views.HomeActivity"
@@ -33,11 +36,11 @@
         <activity android:name=".views.LoginActivity" />
         <activity android:name=".views.MainActivity" />
         <activity
-            android:name=".views.OrdersListActivity"
-            android:launchMode="singleTop" />
+            android:name=".views.OrdersListActivity" />
         <activity
             android:name=".views.OrderDetailsActivity"
-            android:windowSoftInputMode="stateAlwaysHidden" />
+            android:configChanges="keyboard|keyboardHidden|screenLayout|screenSize|orientation"
+            android:windowSoftInputMode="stateHidden|adjustResize" />
         <activity
             android:name=".views.DeviceListActivity"
             android:label="@string/label_select_device"

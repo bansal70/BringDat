@@ -1,6 +1,5 @@
 package com.bring.dat.model;
 
-import android.app.Activity;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.ContentResolver;
@@ -14,7 +13,6 @@ import com.bring.dat.model.network.APIClient;
 import com.bring.dat.model.network.ApiService;
 import com.bring.dat.model.pojo.OrderDetails;
 import com.bring.dat.views.HomeActivity;
-import com.bring.dat.views.services.BTService;
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
 import com.google.gson.Gson;
@@ -30,7 +28,6 @@ import timber.log.Timber;
 public class NotificationController extends FirebaseMessagingService {
 
     ApiService apiService;
-    private String orderId = "";
     Context mContext;
 
     @Override
@@ -39,7 +36,7 @@ public class NotificationController extends FirebaseMessagingService {
         Timber.e("Notification :: %s", remoteMessage.getData().toString());
 
         mContext = getApplicationContext();
-        orderId = remoteMessage.getData().get("orderId");
+        String orderId = remoteMessage.getData().get("orderId");
         String token = BDPreferences.readString(getApplicationContext(), Constants.KEY_TOKEN);
 
         //   if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
@@ -50,7 +47,7 @@ public class NotificationController extends FirebaseMessagingService {
                 .onErrorResumeNext(throwable -> {
                     Timber.e("Server error");
                 })
-                .doOnNext(this::orderDetails)
+                .doOnNext(this::startMain)
                 .doOnError(AppUtils::serverError)
                 .subscribe();
         //   }
@@ -58,53 +55,10 @@ public class NotificationController extends FirebaseMessagingService {
         sendNotification();
     }
 
-    private void orderDetails(OrderDetails mOrderDetails) {
-        startMain(mOrderDetails);
-
-        if (BDPreferences.readBoolean(mContext, Constants.AUTO_PRINT_TYPE)) {
-            //PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
-            if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
-                NetworkPrinting networkPrinting = new NetworkPrinting((Activity) mContext);
-                networkPrinting.printData((Activity)mContext, mOrderDetails);
-            } else if (Utils.isServiceRunning(mContext, BTService.class)) {
-                PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
-            } else {
-                Utils.showToast(mContext, mContext.getString(R.string.error_printer_unavailable));
-            }
-        }
-        //String printingOptions =  BDPreferences.readString(mContext, Constants.KEY_PRINTING_OPTION);
-        //String printingType = BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE);
-
-        //OrderDetails.Data data = mOrderDetails.data;
-        //Order mOrder = data.order.get(0);
-
-
-        /*if (printingOptions.equals("1")) {
-            switch (printingType) {
-                case Constants.PRINTING_COD:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
-                        PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
-                    }
-                    break;
-
-                case Constants.PRINTING_PREPAID:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID)) {
-                        PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
-                    }
-                    break;
-
-                case Constants.PRINTING_BOTH:
-                    PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
-                    break;
-            }
-        }*/
-    }
-
     private void startMain(OrderDetails mOrderDetails) {
         Intent intent = new Intent(getApplicationContext(), HomeActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.putExtra("orderId", orderId);
-        intent.putExtra("orderDetails", new Gson().toJson(mOrderDetails));
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(Constants.ORDER_DETAILS, new Gson().toJson(mOrderDetails));
         startActivity(intent);
     }
 

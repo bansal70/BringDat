@@ -283,7 +283,7 @@
                 android:layout_height="4dp"
                 android:background="#bcbcbc" />
 
-           <include layout="@layout/content_order_instructions"/>
+            <include layout="@layout/content_order_instructions"/>
 
             <android.support.v7.widget.CardView
                 android:id="@+id/cardPaymentType"
@@ -291,7 +291,7 @@
                 android:layout_height="wrap_content"
                 app:cardUseCompatPadding="true"
                 android:visibility="gone"
-                app:cardCornerRadius="@dimen/_5sdp"
+                app:cardCornerRadius="@dimen/_2sdp"
                 android:layout_marginTop="@dimen/_5sdp">
 
                 <LinearLayout

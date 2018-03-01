@@ -1,5 +1,6 @@
 package com.bring.dat.views.adapters;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.content.ContextCompat;
@@ -94,9 +95,8 @@ public class NewOrdersAdapter extends RecyclerView.Adapter<NewOrdersAdapter.View
 
             itemView.setOnClickListener(view -> {
                 Order mOrder = mListOrderDetails.get(getAdapterPosition());
-
-                mContext.startActivity(new Intent(mContext, OrderDetailsActivity.class)
-                        .putExtra("orderId", mOrder.orderid));
+                ((Activity)mContext).startActivityForResult(new Intent(mContext, OrderDetailsActivity.class)
+                        .putExtra("orderId", mOrder.orderid), 101);
             });
         }
     }

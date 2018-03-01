@@ -204,13 +204,15 @@
             android:visibility="visible"
             android:layout_marginTop="@dimen/_5sdp">
 
-            <TextView
+            <android.support.v7.widget.AppCompatTextView
                 android:id="@+id/tvDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
                 android:layout_weight="1"
                 android:textSize="@dimen/_15sdp"
+                android:maxLines="1"
+                app:autoSizeTextType="uniform"
                 android:drawableLeft="@drawable/ic_clock"
                 android:drawableStart="@drawable/ic_clock"
                 android:layout_gravity="center"

@@ -12,7 +12,6 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -30,10 +29,10 @@ import com.bring.dat.model.pojo.AdjustReasons;
 import com.bring.dat.model.pojo.Cart;
 import com.bring.dat.model.pojo.Order;
 import com.bring.dat.model.pojo.OrderDetails;
-import com.bring.dat.model.pojo.Settings;
 import com.bring.dat.views.adapters.ItemsAdapter;
 import com.bring.dat.views.adapters.OrderLogAdapter;
 import com.bring.dat.views.fragments.AdjustSaleDialogFragment;
+import com.bring.dat.views.fragments.UpdateStatusDialogFragment;
 import com.bring.dat.views.fragments.VoidSaleDialogFragment;
 import com.bring.dat.views.services.BTService;
 import com.google.gson.Gson;
@@ -190,20 +189,22 @@ public class OrderDetailsActivity extends AppBaseActivity {
 
     ItemsAdapter itemsAdapter;
 
-    private Dialog dialogOrder, dialogTime;
-    private String mOrderId = "", mOrderStatus, mOrderTime;
     AdjustReasons mAdjustReasons;
+
+    NetworkPrinting networkPrinting;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_order_details);
         ButterKnife.bind(this);
+        networkPrinting = new NetworkPrinting(this);
 
         setSupportActionBar(toolbar);
         if (getSupportActionBar() != null)
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         tvTitle.setText(getString(R.string.title_activity_order_details));
+        toolbar.setNavigationIcon(R.drawable.ic_back_image);
 
         if (BDPreferences.readString(mContext, Constants.KEY_LOGIN_TYPE).equals(Constants.LOGIN_LOGGER)) {
             toolbar.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorPrimary));
@@ -255,8 +256,6 @@ public class OrderDetailsActivity extends AppBaseActivity {
     private void setData(OrderDetails mOrderDetails) {
         OrderDetails.Data data = mOrderDetails.data;
         Order mOrder = data.order.get(0);
-        mOrderId = mOrder.orderid;
-        mOrderStatus = mOrder.status;
 
         tvOrderTime.setText(String.format("%s %s", Utils.parseDateToMMddYY(mOrder.deliverydate), mOrder.orderdate));
         tvPersonName.setText(String.format("%s %s", mOrder.customername, mOrder.customerlastname));
@@ -265,23 +264,21 @@ public class OrderDetailsActivity extends AppBaseActivity {
         tvPaymentType.setText(mOrder.paymentType);
         tvOrderNumber.setText(mOrder.orderid);
         tvAddress.setText(AppUtils.userAddress(mOrder));
-        String time;
-
-        if (Utils.getToday().equals(mOrder.deliverydate)) {
-            time = getString(R.string.prompt_today) + " " +
-                    Utils.parseTimeToAMPM(mOrder.deliverytime);
-        } else {
-            time = Utils.parseDateToMMdd(mOrder.deliverydate) + " " + mOrder.deliverytime;
-        }
 
         if (mOrder.deliverytime.equalsIgnoreCase("ASAP")) {
-            time = mOrder.deliverytime;
+            tvDate.setText(mOrder.deliverytime);
         } else {
             tvDate.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorBloodRed));
             tvDate.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
             tvDate.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_action_clock_white, 0,0,0);
+            String time;
+            if (Utils.getToday().equals(mOrder.deliverydate)) {
+                time = getString(R.string.prompt_today) + " " + Utils.parseTimeToAMPM(mOrder.deliverytime);
+            } else {
+                time = Utils.parseDateToMMdd(mOrder.deliverydate) + " " + mOrder.deliverytime;
+            }
+            tvDate.setText(time);
         }
-        tvDate.setText(time);
 
         String mDeliveryType = mOrder.deliverytype.substring(0, 1).toUpperCase() + mOrder.deliverytype.substring(1);
         if (mOrder.deliverytype.equalsIgnoreCase("delivery")) {
@@ -304,15 +301,15 @@ public class OrderDetailsActivity extends AppBaseActivity {
         if (!mOrder.offerId.isEmpty() && !mOrder.offeramount.equals("0.00")) {
             couponsLL.setVisibility(View.VISIBLE);
             tvOfferName.setText(String.format("(%s)", mOrder.offerName));
-            tvOfferAmount.setText(String.format("%s%s", Constants.CURRENCY, mOrder.offeramount));
+            tvOfferAmount.setText(String.format("-%s%s", Constants.CURRENCY, mOrder.offeramount));
         }
         tvSalesTax.setText(String.format("%s%s", Constants.CURRENCY, mOrder.taxamount));
         tvTip.setText(String.format("%s%s", Constants.CURRENCY, mOrder.tipamount));
         tvDeliveryPrice.setText(String.format("%s%s", Constants.CURRENCY, mOrder.deliveryamount));
         tvConvenienceTax.setText(String.format("%s%s", Constants.CURRENCY, mOrder.convenienceFee));
-        tvDiscount.setText(String.format("%s%s", Constants.CURRENCY, mOrder.siteDiscountAmount));
-        tvTaxValue.setText(String.format("(%s%%)", mOrder.taxvalue));
+        tvDiscount.setText(String.format("-%s%s", Constants.CURRENCY, mOrder.siteDiscountAmount));
         tvDiscountValue.setText(String.format("(%s%%)", mOrder.siteDiscountPercent));
+        tvTaxValue.setText(String.format("(%s%%)", mOrder.taxvalue));
         tvTotal.setText(String.format("%s%s", Constants.CURRENCY, mOrder.ordertotalprice));
 
         if (mOrder.order_print_status.equals("0")) {
@@ -334,7 +331,7 @@ public class OrderDetailsActivity extends AppBaseActivity {
         if (BDPreferences.readString(mContext, Constants.KEY_PRINTING_OPTION).equals("1")) {
             switch (BDPreferences.readString(mContext, Constants.KEY_PRINTING_TYPE)) {
                 case Constants.PRINTING_PREPAID:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID)) {
+                    if (!mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
                         btPrintOrder.setVisibility(View.VISIBLE);
                     } else {
                         btPrintOrder.setVisibility(View.GONE);
@@ -350,13 +347,11 @@ public class OrderDetailsActivity extends AppBaseActivity {
                     break;
 
                 case Constants.PRINTING_BOTH:
-                    if (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD)) {
-                        btPrintOrder.setVisibility(View.VISIBLE);
-                    } else {
-                        btPrintOrder.setVisibility(View.GONE);
-                    }
+                    btPrintOrder.setVisibility(View.VISIBLE);
                     break;
             }
+        } else {
+            btPrintOrder.setVisibility(View.GONE);
         }
 
         if (!mOrder.instructions.isEmpty()) {
@@ -385,9 +380,12 @@ public class OrderDetailsActivity extends AppBaseActivity {
             return;
 
         List<String> card = listCard.get(0);
-        if (card.size() > 4 && (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC) || !mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_COD))) {
-            cardPaymentType.setVisibility(View.VISIBLE);
+        if (card.size() > 4 && (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC) || mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_PREPAID))) {
+            if (card.get(0).isEmpty() && card.get(1).isEmpty()) {
+                return;
+            }
 
+            cardPaymentType.setVisibility(View.VISIBLE);
             tvCardType.append(" " + card.get(0).toUpperCase());
             tvCardName.append(" " + card.get(1).toUpperCase());
             tvCardNumber.append(" " + card.get(2).toUpperCase());
@@ -457,7 +455,11 @@ public class OrderDetailsActivity extends AppBaseActivity {
 
     private void print() {
         if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
-            NetworkPrinting networkPrinting = new NetworkPrinting((Activity) mContext);
+
+            if (!networkPrinting.isPrinted) {
+                Utils.showToast(mContext, "Please wait while we are processing your last receipt");
+                return;
+            }
             networkPrinting.printData((Activity)mContext, mOrderDetails);
         } else if (Utils.isServiceRunning(mContext, BTService.class)) {
             PrintReceipt.printOrderReceipt(mContext, mOrderDetails);
@@ -471,144 +473,24 @@ public class OrderDetailsActivity extends AppBaseActivity {
 
     @OnClick(R.id.btChangeOrderStatus)
     public void changeOrderStatus() {
-        dialogOrder = Utils.createDialog(mContext, R.layout.dialog_order_status);
-        Button btPending = dialogOrder.findViewById(R.id.btPending);
-        Button btWorkingTime = dialogOrder.findViewById(R.id.btWorkingTime);
-        Button btComplete = dialogOrder.findViewById(R.id.btComplete);
-        Button btCancel = dialogOrder.findViewById(R.id.btCancel);
-        TextView tvOrderCurrentStatus = dialogOrder.findViewById(R.id.tvOrderCurrentStatus);
-
-        OrderDetails.Data data = mOrderDetails.data;
-        Order mOrder = data.order.get(0);
-        tvOrderCurrentStatus.setText(mOrder.status);
-
-        dialogOrder.findViewById(R.id.fabCancel).setOnClickListener(view -> dialogOrder.dismiss());
-
-        btPending.setOnClickListener(view -> {
-            mOrderStatus = "1"; // pending order
-            mOrderTime = "";
-            updateOrder();
-        });
-
-        btWorkingTime.setOnClickListener(view -> {
-            mOrderStatus = "2"; // processing order
-            updateTime();
-        });
-
-        btComplete.setOnClickListener(view -> {
-            mOrderStatus = "3"; // completed order
-            mOrderTime = "";
-            updateOrder();
-        });
-
-        btCancel.setOnClickListener(view -> {
-            AlertDialog alert = Utils.createAlert(this, "", getString(R.string.alert_cancel_order));
-            alert.setButton(Dialog.BUTTON_POSITIVE, getString(android.R.string.yes),
-                    (dialogInterface, i) -> {
-                        mOrderStatus = "4"; // canceled order
-                        mOrderTime = "";
-                        updateOrder();
-                    });
-            alert.setButton(Dialog.BUTTON_NEGATIVE, getString(android.R.string.cancel), (dialogInterface, i) -> dialogInterface.dismiss());
-            alert.show();
-        });
-
-        if (mOrder.status.contains("pending")) {
-            btWorkingTime.setVisibility(View.VISIBLE);
-            btPending.setVisibility(View.GONE);
-        } else {
-            btWorkingTime.setVisibility(View.GONE);
-            btPending.setVisibility(View.VISIBLE);
-        }
-
-        dialogOrder.show();
-    }
-
-    private void updateTime() {
-        dialogTime = Utils.createDialog(mContext, R.layout.dialog_working_time);
-        EditText editTime = dialogTime.findViewById(R.id.editTime);
-
-        dialogTime.findViewById(R.id.btApply).setOnClickListener(view -> {
-            mOrderTime = editTime.getText().toString().trim();
-            if (mOrderTime.isEmpty()) {
-                Utils.showToast(mContext, mContext.getString(R.string.error_empty_time));
-                return;
-            }
-            dialogTime.dismiss();
-            mOrderStatus = "2"; // processing order
-            updateOrder();
-            dialogOrder.dismiss();
-        });
-
-        dialogTime.findViewById(R.id.bt10min).setOnClickListener(view -> updateTime(10));
-        dialogTime.findViewById(R.id.bt20min).setOnClickListener(view -> updateTime(20));
-        dialogTime.findViewById(R.id.bt30min).setOnClickListener(view -> updateTime(30));
-        dialogTime.findViewById(R.id.bt15min).setOnClickListener(view -> updateTime(15));
-        dialogTime.findViewById(R.id.bt45min).setOnClickListener(view -> updateTime(45));
-        dialogTime.findViewById(R.id.bt60min).setOnClickListener(view -> updateTime(60));
-
-        dialogTime.findViewById(R.id.btCancel).setOnClickListener(view -> dialogTime.dismiss());
-
-        dialogTime.show();
-    }
-
-    private void updateTime(int time) {
-        mOrderStatus = "2"; // processing order
-        mOrderTime = String.valueOf(time);
-        updateOrder();
-        dialogOrder.dismiss();
-        dialogTime.dismiss();
-    }
-
-    private void updateOrder() {
-        if (!isInternetActive()) {
-            return;
-        }
-
-        showDialog();
-        String restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
-        String token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
-
-        apiService.changeOrderStatus(Operations.updateOrderParams(restId, mOrderId, mOrderStatus, mOrderTime, token))
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .onErrorResumeNext(throwable -> {
-                    serverError();
-                })
-                .doOnNext(this::setOrderStatus)
-                .doOnError(this::serverError)
-                .subscribe();
-
-        dialogOrder.dismiss();
-    }
-
-    private void setOrderStatus(Settings mSettings) {
-        dismissDialog();
-        if (!mSettings.success) {
-            showToast(mSettings.msg);
-            return;
-        }
         OrderDetails.Data data = mOrderDetails.data;
         Order mOrder = data.order.get(0);
 
-        switch (mOrderStatus) {
-            case "1":
-                mOrder.status = "pending";
-                break;
-            case "2":
-                mOrder.status = "processing";
-                break;
-            case "3":
-                mOrder.status = "completed";
-                break;
-            case "4":
-                mOrder.status = "canceled";
-                break;
-        }
+        Bundle bundle = new Bundle();
+        bundle.putString(Constants.ORDER_DATA, new Gson().toJson(mOrder));
+        UpdateStatusDialogFragment statusDialogFragment = new UpdateStatusDialogFragment();
+        statusDialogFragment.setArguments(bundle);
+        statusDialogFragment.show(getSupportFragmentManager(), statusDialogFragment.getTag());
+        statusDialogFragment.setOnDataChangeListener(this::setResults);
+    }
 
-        setStatus(mOrder);
+    public void setResults() {
+        Intent i = new Intent();
+        i.putExtra(Constants.ORDER_DATA, true);
+        setResult(RESULT_OK);
         finish();
     }
+
 
     private void getReasons() {
         // mActivity.showDialog();
@@ -662,7 +544,7 @@ public class OrderDetailsActivity extends AppBaseActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
 
-        getDetails();
+        //getDetails();
     }
 
     private void connectionAlert() {

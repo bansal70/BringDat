@@ -9,6 +9,7 @@ public class Constants {
     public static final String CURRENCY = "$";
     public static final String PRINTER_MAC_ADDRESS = "66:02:1A:24:08:A8";
     public static final String SAMSUNG_MAC_ADDRESS = "5C:99:60:6B:A0:EF";
+    public static final String IMAGE_BASE_URL = "https://www.bringdat.com/photo_restaurant/logo/";
     // public static final String REDMI_MAC_ADDRESS = "E4:46:DA:17:C9:9E";
     public static final int WIFI_PORT = 9100;
 
@@ -23,7 +24,11 @@ public class Constants {
     public static final String KEY_SOUND_TYPE = "sound_type";
     public static final String AUTO_PRINT_TYPE = "auto_print";
     public static final String KEY_IP_ADDRESS = "ip_address";
+    public static final String KEY_RESTAURANT_NAME = "restaurant_name";
+    public static final String KEY_RESTAURANT_IMAGE = "restaurant_image";
     public static final String LAST_PRINTER_CONNECTED = "recent_printer";
+    public static final String ORDER_DETAILS = "order_details";
+    public static final String ORDER_DATA = "order_data";
 
     public static final String PRINTER_BLUETOOTH = "bluetooth_printer";
     public static final String PRINTER_WIFI = "wifi_printer";

@@ -177,8 +177,6 @@
     <string name="prompt_internet_down">Internet Down!</string>
     <string name="prompt_check_internet">Please check your internet connection and connect again.</string>
     <string name="error_pending_order_incomplete">Please complete your pending orders</string>
-    <string name="prompt_version_date">02/12/2018</string>
-    <string name="prompt_version">Version</string>
     <string name="prompt_auto_printing">Auto Printing</string>
     <string name="prompt_network_printer">Network Printer</string>
     <string name="prompt_bluetooth_printer">Bluetooth Printer</string>
@@ -215,4 +213,11 @@
     <string name="handlingmsg_err_wrong_paper">Please set correct roll paper.\n</string>
     <string name="handlingmsg_err_battery_real_end">Please connect AC adapter or change the battery.\nBattery of printer is almost empty.\n</string>
     <string name="handlingmsg_err_offline">Printer is offline.\n</string>
+
+    <string name="prompt_version_date">02/26/2018</string>
+    <string name="prompt_version">Version</string>
+    <string name="alert_move_order_to_pending">Are you sure that you want to move this order back to a status of PENDING?</string>
+    <string name="alert_move_order_to_complete">Are you sure that you want to change this orders status to COMPLETE?</string>
+    <string name="prompt_printing_options">Printing Options</string>
+    <string name="processing_last_receipt">Please wait while we are processing your last receipt</string>
 </resources>

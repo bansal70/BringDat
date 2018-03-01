@@ -165,14 +165,14 @@ public abstract class AppBaseActivity extends AppCompatActivity implements Netwo
         return true;
     }
 
-    public void  goToFragment(Fragment fragment) {
+    public void goToFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack("");
         transaction.commitAllowingStateLoss();
     }
 
-    public void  goToHomeFragment(Fragment fragment) {
+    public void goToHomeFragment(Fragment fragment) {
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.addToBackStack("Home").commitAllowingStateLoss();

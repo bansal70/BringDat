@@ -22,6 +22,8 @@ public class Settings {
     public Data data;
     @SerializedName("authentication")
     public String mAuthentication = "0";
+    @SerializedName("auto_print")
+    public String mAutoPrint;
 
     public static class Data {
         @SerializedName("menu_only_merchant_flag")
@@ -32,5 +34,7 @@ public class Settings {
         public String printingType;
         @SerializedName("sound_type")
         public String soundType;
+        @SerializedName("auto_print")
+        public String autoPrint;
     }
 }

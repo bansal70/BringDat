@@ -3,10 +3,12 @@ package com.bring.dat.views.fragments;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.text.InputType;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
@@ -63,9 +65,13 @@ public class AdjustSaleDialogFragment extends DialogBaseFragment{
 
         int width = RelativeLayout.LayoutParams.MATCH_PARENT;
         int height = RelativeLayout.LayoutParams.WRAP_CONTENT - 100;
+
         getDialog().getWindow().setLayout(width, height);
         getDialog().requestWindowFeature(Window.FEATURE_NO_TITLE);
         getDialog().getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+
+        editMessage.setImeOptions(EditorInfo.IME_ACTION_DONE);
+        editMessage.setRawInputType(InputType.TYPE_CLASS_TEXT);
 
         getData();
 

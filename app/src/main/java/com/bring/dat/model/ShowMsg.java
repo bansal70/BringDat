@@ -2,7 +2,6 @@ package com.bring.dat.model;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 
 import com.bring.dat.R;
 import com.epson.epos2.Epos2CallbackCode;
@@ -26,7 +25,7 @@ public class ShowMsg {
     }
 
     public static void showResult(int code, String errMsg, Context context) {
-        String msg = "";
+        String msg;
         if (errMsg.isEmpty()) {
             msg = String.format(
                       "\t%s\n\t%s\n",
@@ -41,6 +40,9 @@ public class ShowMsg {
                       context.getString(R.string.title_msg_description),
                       errMsg);
         }
+
+        if (getCodeText(code).equals("ERR_TIMEOUT"))
+            return;
         show(msg, context);
     }
 
@@ -51,10 +53,8 @@ public class ShowMsg {
     private static void show(String msg, Context context) {
         AlertDialog.Builder alertDialog = new AlertDialog.Builder(context);
         alertDialog.setMessage(msg);
-        alertDialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface dialog, int whichButton) {
-                return ;
-            }
+        alertDialog.setPositiveButton("OK", (dialog, whichButton) -> {
+            dialog.dismiss();
         });
         alertDialog.create();
         alertDialog.show();

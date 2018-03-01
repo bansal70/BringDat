@@ -60,6 +60,9 @@ public interface ApiService {
     @POST("webservices.php?action=changeStatus")
     Observable<Settings> changeOrderStatus(@QueryMap HashMap<String, String> mapParams);
 
+    @POST("webservices.php?action=updateAutoPrintingStatus")
+    Observable<Settings> updateAutoPrinting(@QueryMap HashMap<String, String> mapParams);
+
     @POST("webservices.php?action=getSettings")
     Observable<Settings> getSettings(@QueryMap HashMap<String, String> mapParams);
 

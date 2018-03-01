@@ -1,17 +1,15 @@
 package com.bring.dat.views.fragments;
 
+import android.app.Dialog;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 
 import com.bring.dat.R;
 import com.bring.dat.model.BDPreferences;
 import com.bring.dat.model.Constants;
+import com.bring.dat.model.Utils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -26,14 +24,12 @@ public class DialogNetworkPrinter extends DialogBaseFragment {
     EditText editIPAddress;
     private OnWifiConnectedListener onWifiConnectedListener;
 
-    @Nullable
+    @NonNull
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.dialog_wifi_printer, container, false);
-
-        unbinder = ButterKnife.bind(this, view);
-
-        return view;
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = Utils.createDialog(mContext, R.layout.dialog_wifi_printer);
+        unbinder = ButterKnife.bind(this, dialog);
+        return dialog;
     }
 
     @OnClick(R.id.btConnect)

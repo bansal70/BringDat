@@ -45,6 +45,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
@@ -53,6 +54,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bring.dat.R;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -131,6 +134,13 @@ public class Utils {
     public static void gotoNextActivityAnimation(Context mContext, Class<?> className) {
         mContext.startActivity(new Intent(mContext, className));
         ((Activity) mContext).overridePendingTransition(R.anim.slide_in_from_right, R.anim.slide_out_to_left);
+    }
+
+    public static void loadImage(Context mContext, String image, ImageView imageView) {
+        Glide.with(mContext)
+                .load(image)
+                .apply(new RequestOptions().centerCrop())
+                .into(imageView);
     }
 
     public static boolean emailValidator(String email) {

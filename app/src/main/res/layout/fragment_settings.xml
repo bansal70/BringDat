@@ -8,7 +8,7 @@
         android:id="@+id/parentLL"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
+        android:visibility="visible"
         android:orientation="vertical">
 
         <TextView
@@ -21,32 +21,6 @@
             android:textColor="@color/colorDarkGreen"
             android:padding="@dimen/_10sdp"
             android:textSize="@dimen/_14sdp"/>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="@dimen/_10sdp"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:text="@string/prompt_auto_printing"
-                android:textAllCaps="false"
-                android:layout_weight="3"
-                android:textColor="@color/black"
-                android:textSize="@dimen/_13sdp" />
-
-            <android.support.v7.widget.SwitchCompat
-                android:id="@+id/switchAutoPrint"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:clickable="false"
-                android:focusable="false"
-                android:layout_weight="1"/>
-
-        </LinearLayout>
 
         <View
             android:layout_width="match_parent"
@@ -221,6 +195,46 @@
             android:layout_height="1dp"
             android:background="#acacac" />
 
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/prompt_printing_options"
+            android:textSize="@dimen/_14sdp"
+            android:textColor="@color/colorBlack"
+            android:padding="@dimen/_10sdp"
+            android:textStyle="bold"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/_10sdp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:text="@string/prompt_auto_printing"
+                android:textAllCaps="false"
+                android:layout_weight="3"
+                android:textColor="@color/black"
+                android:textSize="@dimen/_13sdp" />
+
+            <android.support.v7.widget.SwitchCompat
+                android:id="@+id/switchAutoPrint"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:clickable="false"
+                android:focusable="false"
+                android:layout_weight="1"/>
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#acacac" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -250,7 +264,7 @@
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:background="#acacac" />
+            android:background="#acacac"/>
 
         <LinearLayout
             android:layout_width="match_parent"

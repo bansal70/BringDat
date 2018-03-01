@@ -4,14 +4,11 @@ package com.bring.dat.model;
  * Created by rishav on 12/27/2017.
  */
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.bluetooth.BluetoothAdapter;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.ParcelUuid;
 import android.support.v7.app.AlertDialog;
 
 import com.bring.dat.R;
@@ -25,7 +22,6 @@ import com.bring.dat.views.services.BluetoothService;
 import com.epson.epos2.printer.Printer;
 import com.epson.epos2.printer.PrinterStatusInfo;
 
-import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.List;
@@ -369,24 +365,6 @@ public class AppUtils {
         } catch (ActivityNotFoundException ex) {
             Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("market://details?id=pe.diegoveloper.printerserverapp"));
             mActivity.startActivity(intent);
-        }
-    }
-
-    @SuppressLint("PrivateApi")
-    public void fetchUUID(Context mContext) {
-        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
-
-        try {
-            Method getUuidsMethod = BluetoothAdapter.class.getDeclaredMethod("getUuids", null);
-
-            ParcelUuid[] uuids = (ParcelUuid[]) getUuidsMethod.invoke(adapter, null);
-
-            for (ParcelUuid uuid : uuids) {
-                Timber.e("UUID: %s", uuid.getUuid().toString());
-                BDPreferences.putString(mContext, "UUID", uuid.getUuid().toString());
-            }
-        } catch (Exception ex) {
-            ex.printStackTrace();
         }
     }
 

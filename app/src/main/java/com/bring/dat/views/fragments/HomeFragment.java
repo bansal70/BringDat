@@ -1,11 +1,11 @@
 package com.bring.dat.views.fragments;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.CardView;
@@ -73,11 +73,17 @@ public class HomeFragment extends AppBaseFragment {
     @BindView(R.id.swipeToRefresh)
     SwipeRefreshLayout mSwipeRefreshLayout;
 
-    @BindView(R.id.tvNewOrders)
+    @BindView(R.id.viewPending)
+    View viewPending;
+
+    @BindView(R.id.viewWorking)
+    View viewWorking;
+
+    /*@BindView(R.id.tvNewOrders)
     TextView tvNewOrders;
 
     @BindView(R.id.tvWorkingOrders)
-    TextView tvWorkingOrders;
+    TextView tvWorkingOrders;*/
 
     SwipeRefreshLayout.OnRefreshListener onRefreshListener;
 
@@ -136,11 +142,15 @@ public class HomeFragment extends AppBaseFragment {
         restId = BDPreferences.readString(mContext, Constants.KEY_RESTAURANT_ID);
         token = BDPreferences.readString(mContext, Constants.KEY_TOKEN);
 
-        //getPendingOrders();
-
         onRefreshListener = this::getPendingOrders;
 
         mSwipeRefreshLayout.setOnRefreshListener(onRefreshListener);
+
+        if (!mActivity.isInternetActive()) {
+            connectionAlert();
+            return;
+        }
+        getPendingOrders();
     }
 
 
@@ -163,6 +173,9 @@ public class HomeFragment extends AppBaseFragment {
             showToast(getString(R.string.error_session_expired));
             return;
         }
+
+        BDPreferences.putString(mContext, Constants.KEY_RESTAURANT_NAME, mOrdersResponse.restaurantName);
+        BDPreferences.putString(mContext, Constants.KEY_RESTAURANT_IMAGE, mOrdersResponse.restaurantLogo);
 
         mPendingOrdersList.clear();
         OrdersResponse.Data mOrdersData = mOrdersResponse.data;
@@ -237,14 +250,16 @@ public class HomeFragment extends AppBaseFragment {
         }*/
     }
 
-    @OnClick(R.id.tvNewOrders)
+    @OnClick(R.id.llNewOrders)
     public void newOrders() {
         isNewOrders = true;
         isPendingOrders = false;
-        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
-        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
-        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+       // tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+       // tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
+       // tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+       // tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+        viewPending.setVisibility(View.VISIBLE);
+        viewWorking.setVisibility(View.GONE);
 
         mNewOrderAdapter = new NewOrdersAdapter(mContext, mPendingOrdersList);
         mRecyclerOrders.setAdapter(mNewOrderAdapter);
@@ -253,15 +268,17 @@ public class HomeFragment extends AppBaseFragment {
         tvNoOrders.setText(getString(R.string.prompt_empty_pending_orders));
     }
 
-    @OnClick(R.id.tvWorkingOrders)
+    @OnClick(R.id.llWorkingOrders)
     public void workingOrders() {
         isNewOrders = false;
         isPendingOrders = true;
 
-        tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
-        tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
-        tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
-        tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
+        viewPending.setVisibility(View.GONE);
+        viewWorking.setVisibility(View.VISIBLE);
+      //  tvNewOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+       // tvNewOrders.setTextColor(ContextCompat.getColor(mContext, R.color.black));
+      //  tvWorkingOrders.setTextColor(ContextCompat.getColor(mContext, R.color.colorWhite));
+      //  tvWorkingOrders.setBackgroundColor(ContextCompat.getColor(mContext, R.color.orange));
 
         mHomeAdapter = new HomeAdapter(mContext, mWorkingOrdersList);
         mRecyclerOrders.setAdapter(mHomeAdapter);
@@ -271,14 +288,26 @@ public class HomeFragment extends AppBaseFragment {
     }
 
     @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+       // super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK && requestCode == 101) {
+            if (!mActivity.isInternetActive()) {
+                connectionAlert();
+                return;
+            }
+            getPendingOrders();
+        }
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
 
-        if (!mActivity.isInternetActive()) {
+        /*if (!mActivity.isInternetActive()) {
             connectionAlert();
             return;
         }
-        getPendingOrders();
+        getPendingOrders();*/
     }
 
     private void connectionAlert() {

@@ -79,6 +79,15 @@ public class Operations {
         return hashMap;
     }
 
+    public static HashMap<String, String> updateAutoPrintStatus(String restaurantId, String status, String token) {
+        HashMap<String, String> hashMap = new HashMap<>();
+        hashMap.put("restaurantId", restaurantId);
+        hashMap.put("status", status);
+        hashMap.put("token", token);
+
+        return hashMap;
+    }
+
     public static HashMap<String, String> orderStatusParams(String restaurantId, String status, String token) {
         HashMap<String, String> hashMap = new HashMap<>();
         hashMap.put("restaurantId", restaurantId);

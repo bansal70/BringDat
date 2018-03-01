@@ -1,5 +1,6 @@
 package com.bring.dat.views.adapters;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -39,11 +40,13 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
     private Context mContext;
     private List<Order> mListOrderDetails;
     private AppBaseActivity mActivity;
+    private NetworkPrinting networkPrinting;
 
     public OrdersListAdapter(Context mContext, List<Order> mListOrderDetails) {
         this.mContext = mContext;
         this.mListOrderDetails = mListOrderDetails;
         mActivity = (AppBaseActivity) mContext;
+        networkPrinting = new NetworkPrinting(mActivity);
     }
 
     @Override
@@ -137,8 +140,8 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
                 Order mOrder = mListOrderDetails.get(getAdapterPosition());
                 /*if (mActivity.isInternetActive())
                     alertPrint(getAdapterPosition());*/
-                mContext.startActivity(new Intent(mContext, OrderDetailsActivity.class)
-                        .putExtra("orderId", mOrder.orderid));
+                ((Activity)mContext).startActivityForResult(new Intent(mContext, OrderDetailsActivity.class)
+                        .putExtra("orderId", mOrder.orderid), 101);
             });
         }
 
@@ -187,7 +190,11 @@ public class OrdersListAdapter extends RecyclerView.Adapter<OrdersListAdapter.Vi
 
         if (mOrderDetails.success) {
             if (!BDPreferences.readString(mContext, Constants.KEY_IP_ADDRESS).isEmpty()) {
-                NetworkPrinting networkPrinting = new NetworkPrinting(mActivity);
+
+                if (!networkPrinting.isPrinted) {
+                    Utils.showToast(mContext, "Please wait while we are processing your last receipt");
+                    return;
+                }
                 networkPrinting.printData(mActivity, mOrderDetails);
             } else if (Utils.isServiceRunning(mContext, BTService.class)) {
                 PrintReceipt.printOrderReceipt(mContext, mOrderDetails);

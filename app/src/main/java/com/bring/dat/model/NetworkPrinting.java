@@ -24,22 +24,27 @@ import timber.log.Timber;
 public class NetworkPrinting implements ReceiveListener {
     private Printer mPrinter;
     private Activity mActivity;
+    public boolean isPrinted = true;
 
     public NetworkPrinting(Activity mActivity) {
         this.mActivity = mActivity;
     }
 
-    public void printData(Activity mActivity, OrderDetails mOrderDetails) {
+    public boolean printData(Activity mActivity, OrderDetails mOrderDetails) {
+        isPrinted = false;
         if (!initializeObject(mActivity)) {
-            return;
+            return false;
         }
         if (!createReceiptData(mActivity, mOrderDetails)) {
-            return;
+            return false;
         }
 
         if (!printData()) {
             finalizeObject();
+            return false;
         }
+
+        return true;
     }
 
     private static String leftRightAlign(String str1, String str2) {
@@ -67,13 +72,16 @@ public class NetworkPrinting implements ReceiveListener {
 
         try {
             mPrinter.addTextAlign(Printer.ALIGN_CENTER);
+
             boldText(true);
-            mPrinter.addTextSize(1, 2);
+            mPrinter.addTextSize(2, 2);
             textData.append("ONLINE ORDER").append(BREAK);
             mPrinter.addText(textData.toString());
             textData.delete(0, textData.length());
             mPrinter.addFeedLine(1);
 
+            boldText(false);
+            mPrinter.addTextSize(1, 1);
             textData.append(mOrder.merchantName).append(BREAK);
             textData.append(mOrder.merchantAddress).append(BREAK);
             textData.append(mOrder.merchantPhone).append(BREAK);
@@ -82,7 +90,7 @@ public class NetworkPrinting implements ReceiveListener {
             textData.delete(0, textData.length());
 
             boldText(false);
-            mPrinter.addTextSize(1,1);
+            mPrinter.addTextSize(1, 1);
             textData.append(DIVIDER_DOUBLE).append(BREAK);
             mPrinter.addFeedLine(1);
             Timber.e(textData.toString());
@@ -90,7 +98,7 @@ public class NetworkPrinting implements ReceiveListener {
             textData.delete(0, textData.length());
 
             boldText(true);
-            mPrinter.addTextSize(1, 2);
+            mPrinter.addTextSize(2, 2);
             if (mOrder.deliverytype.equalsIgnoreCase("delivery")) {
                 textData.append("DELIVERY").append(BREAK);
             } else {
@@ -103,33 +111,45 @@ public class NetworkPrinting implements ReceiveListener {
             boldText(false);
             mPrinter.addTextSize(1, 1);
             textData.append(DIVIDER_DOUBLE).append(BREAK);
+            textData.append(mOrder.ordergenerateid).append(SPACE5).append(mOrder.deliverydate)
+                    .append(" ").append(mOrder.orderdate).append(BREAK);
             Timber.e(textData.toString());
             mPrinter.addText(textData.toString());
             textData.delete(0, textData.length());
 
-            mPrinter.addTextSize(1, 1);
-            textData.append(mOrder.ordergenerateid).append(SPACE5).append(mOrder.deliverydate)
-                    .append(" ").append(mOrder.orderdate).append(BREAK);
+            boldText(true);
+            mPrinter.addTextSize(1, 2);
             if (mOrder.deliverytime.equalsIgnoreCase("ASAP")) {
                 textData.append(mOrder.orderdeliverydate).append(BREAK);
             } else {
+                colorText(true);
                 textData.append("Ready By: ").append(Utils.parseDateToMMdd(mOrder.deliverydate)).append(" ")
                         .append(mOrder.deliverytime).append(BREAK);
             }
+            Timber.e(textData.toString());
+            mPrinter.addText(textData.toString());
+            textData.delete(0, textData.length());
+
+            colorText(false);
+            boldText(false);
+            mPrinter.addTextSize(1, 1);
             textData.append(DIVIDER_DOUBLE).append(BREAK);
+            textData.append(mOrder.customername).append(" ").append(mOrder.customerlastname).append(BREAK);
+            textData.append(BREAK);
+            textData.append(AppUtils.userAddress(mOrder)).append(BREAK);
+            mPrinter.addText(textData.toString());
+            textData.delete(0, textData.length());
+
+            boldText(true);
+            mPrinter.addTextSize(1, 2);
+            textData.append(mOrder.customercellphone).append(BREAK);
             Timber.e(textData.toString());
             mPrinter.addText(textData.toString());
             textData.delete(0, textData.length());
 
             boldText(false);
-            textData.append(mOrder.customername).append(" ").append(mOrder.customerlastname).append(BREAK);
-            textData.append(AppUtils.userAddress(mOrder)).append(BREAK);
-            textData.append(mOrder.customercellphone).append(BREAK);
+            mPrinter.addTextSize(1, 1);
             textData.append(DIVIDER_DOUBLE).append(BREAK);
-            Timber.e(textData.toString());
-            mPrinter.addText(textData.toString());
-            textData.delete(0, textData.length());
-
             itemLeft = "Qty" + SPACE4 + "Item";
             itemRight = "Price";
 
@@ -139,44 +159,68 @@ public class NetworkPrinting implements ReceiveListener {
             for (int i = 0; i < mCartList.size(); i++) {
                 Cart mCart = mCartList.get(i);
                 float totalPrice = Float.parseFloat(mCart.qty) * mCart.price;
-                itemLeft = " " + mCart.qty + "   " + mCart.item;
+                itemLeft = " " + mCart.qty + "   " + decode(mCart.item);
                 itemRight = Constants.CURRENCY + AppUtils.roundTwoDecimal(totalPrice);
                 textData.append(leftRightAlign(itemLeft, itemRight));
                 textData.append(BREAK);
+                mPrinter.addText(textData.toString());
+                textData.delete(0, textData.length());
 
+                if (!TextUtils.isEmpty(mCart.specialinstruction)) {
+                    colorText(true);
+                    textData.append("Special Instructions: ").append(mCart.specialinstruction).append(BREAK);
+                }
+                mPrinter.addText(textData.toString());
+                textData.delete(0, textData.length());
+
+                colorText(false);
                 if (!mCart.description.isEmpty()) {
-                    textData.append(mCart.description).append(BREAK);
+                    textData.append(decode(mCart.description)).append(BREAK);
                 }
 
                 if (!mCart.full.isEmpty()) {
-                    // StringBuilder full = new StringBuilder();
                     if (mCart.full.contains(",")) {
                         String[] split = mCart.full.split(",");
                         for (String topping : split) {
-                            textData.append(topping).append(",");
-                            textData.append(BREAK);
+                            textData.append(decode(topping));
+
+                            if (split[split.length - 1].equals(topping))
+                                textData.append(BREAK);
+                            else
+                                textData.append(",").append(BREAK);
+
                         }
                     }
                 }
 
                 if (!mCart.half1.isEmpty()) {
                     if (mCart.half1.contains(",")) {
-                        String[] split = mCart.half1.split(",");
                         textData.append(mContext.getString(R.string.prompt_half_one)).append(" ");
+
+                        String[] split = mCart.half1.split(",");
                         for (String topping : split) {
-                            textData.append(topping).append(",");
-                            textData.append(BREAK);
+                            textData.append(decode(topping));
+
+                            if (split[split.length - 1].equals(topping))
+                                textData.append(BREAK);
+                            else
+                                textData.append(",").append(BREAK);
                         }
                     }
                 }
 
                 if (!mCart.half2.isEmpty()) {
                     if (mCart.half2.contains(",")) {
-                        String[] split = mCart.half2.split(",");
                         textData.append(mContext.getString(R.string.prompt_half_two)).append(" ");
+
+                        String[] split = mCart.half2.split(",");
                         for (String topping : split) {
-                            textData.append(topping).append(",");
-                            textData.append(BREAK);
+                            textData.append(decode(topping));
+
+                            if (split[split.length - 1].equals(topping))
+                                textData.append(BREAK);
+                            else
+                                textData.append(",").append(BREAK);
                         }
                     }
                 }
@@ -186,16 +230,18 @@ public class NetworkPrinting implements ReceiveListener {
             textData.delete(0, textData.length());
             mPrinter.addFeedLine(1);
 
+            textData.append(DIVIDER_DOUBLE).append(BREAK);
             itemLeft = "Subtotal:";
             itemRight = Constants.CURRENCY + mOrder.ordersubtotal;
             textData.append(leftRightAlign(itemLeft, itemRight));
             textData.append(BREAK);
 
             if (!mOrder.offerId.isEmpty() && !mOrder.offeramount.equals("0.00")) {
-                itemLeft = "COUPONS/DISCOUNTS" + "(" + mOrder.offerName + ")";
-                itemRight = Constants.CURRENCY + mOrder.offeramount;
+                itemLeft = "COUPONS/DISCOUNTS";
+                itemRight = "-" + Constants.CURRENCY + mOrder.offeramount;
                 textData.append(leftRightAlign(itemLeft, itemRight));
                 textData.append(BREAK);
+                textData.append("(").append(mOrder.offerName).append(")").append(BREAK);
             }
 
             itemLeft = "Tax(" + mOrder.taxvalue + "%):";
@@ -215,7 +261,7 @@ public class NetworkPrinting implements ReceiveListener {
 
             if (!mOrder.siteDiscountAmount.isEmpty() || !mOrder.siteDiscountAmount.equals("0")) {
                 itemLeft = "Discount(" + mOrder.siteDiscountPercent + "%):";
-                itemRight = Constants.CURRENCY + mOrder.siteDiscountAmount;
+                itemRight = "-" + Constants.CURRENCY + mOrder.siteDiscountAmount;
                 textData.append(leftRightAlign(itemLeft, itemRight));
                 textData.append(BREAK);
             }
@@ -241,19 +287,59 @@ public class NetworkPrinting implements ReceiveListener {
 
             boldText(false);
             mPrinter.addTextSize(1, 1);
-            textData.append(DIVIDER_DOUBLE);
-            mPrinter.addFeedLine(3);
+            if (!TextUtils.isEmpty(mOrder.instructions)) {
+                colorText(true);
+                textData.append("Order Instructions: ").append(mOrder.instructions).append(BREAK);
+            }
+            mPrinter.addText(textData.toString());
+            textData.delete(0, textData.length());
+
+            colorText(false);
+            textData.append(DIVIDER_DOUBLE).append(BREAK);
+            mPrinter.addFeedLine(1);
             Timber.e(textData.toString());
             mPrinter.addText(textData.toString());
             textData.delete(0, textData.length());
 
+            boldText(true);
+            mPrinter.addTextSize(2, 2);
+            if (mOrder.paymentType.equals(Constants.PAYMENT_COD))
+                textData.append(mOrder.paymentType).append(BREAK);
+            else
+                textData.append(Constants.PAYMENT_PREPAID).append(BREAK);
+            mPrinter.addFeedLine(1);
+            Timber.e(textData.toString());
+            mPrinter.addText(textData.toString());
+            textData.delete(0, textData.length());
+
+            boldText(false);
             mPrinter.addTextSize(1, 1);
-            textData.append(mOrder.paymentType).append(BREAK);
             textData.append(DIVIDER_DOUBLE);
             mPrinter.addFeedLine(1);
             Timber.e(textData.toString());
             mPrinter.addText(textData.toString());
             textData.delete(0, textData.length());
+
+            List<List<String>> listCard = data.ccDetails;
+            if (listCard.size() != 0) {
+                List<String> card = listCard.get(0);
+                if (card.size() > 4 && (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC))) {
+                    if (!card.get(2).isEmpty() && card.get(2).contains("-")) {
+                        String[] split = TextUtils.split(card.get(2), "-");
+
+                        boldText(false);
+                        mPrinter.addTextSize(1, 1);
+                        textData.append(DIVIDER_DOUBLE).append(BREAK);
+                        textData.append("Card Number : ");
+                        textData.append("XXXX-XXXX-XXXX-").append(split[3]).append(BREAK);
+                        Timber.e(textData.toString());
+
+                        mPrinter.addText(textData.toString());
+                        textData.delete(0, textData.length());
+                    }
+                }
+            }
+
             mPrinter.addFeedLine(2);
             mPrinter.addCut(Printer.CUT_FEED);
         } catch (Exception e) {
@@ -262,6 +348,34 @@ public class NetworkPrinting implements ReceiveListener {
         }
 
         return true;
+    }
+
+    private void boldText(boolean bold) {
+        try {
+            if (bold) {
+                mPrinter.addTextStyle(Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.TRUE, Printer.PARAM_DEFAULT);
+            } else {
+                mPrinter.addTextStyle(Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void colorText(boolean color) {
+        try {
+            if (color) {
+                mPrinter.addTextStyle(Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.COLOR_2);
+            } else {
+                mPrinter.addTextStyle(Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String decode(String url) {
+        return url.replace("&amp;", "&");
     }
 
     private boolean printData() {
@@ -305,18 +419,6 @@ public class NetworkPrinting implements ReceiveListener {
         return true;
     }
 
-    private void boldText(boolean bold) {
-        try {
-            if (bold) {
-                mPrinter.addTextStyle(Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.TRUE, Printer.PARAM_DEFAULT);
-            } else {
-                mPrinter.addTextStyle(Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT, Printer.PARAM_DEFAULT);
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private boolean isPrintable(PrinterStatusInfo status) {
         if (status == null) {
             return false;
@@ -350,7 +452,7 @@ public class NetworkPrinting implements ReceiveListener {
         return true;
     }
 
-    private boolean connectPrinter(Context mContext) {
+    private boolean connectPrinter(Activity mContext) {
         boolean isBeginTransaction = false;
 
         if (mPrinter == null) {
@@ -435,6 +537,8 @@ public class NetworkPrinting implements ReceiveListener {
 
                 AppUtils.displayPrinterWarnings(mActivity, status);
 
+                isPrinted = true;
+
                 new Thread(() -> disconnectPrinter()).start();
             }
         });
@@ -444,6 +548,7 @@ public class NetworkPrinting implements ReceiveListener {
         if (mPrinter == null) {
             return;
         }
+        isPrinted = true;
 
         mPrinter.clearCommandBuffer();
 

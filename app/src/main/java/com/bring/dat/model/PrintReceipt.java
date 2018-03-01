@@ -6,6 +6,7 @@ package com.bring.dat.model;
 
 import android.content.Context;
 import android.os.StrictMode;
+import android.text.TextUtils;
 
 import com.bring.dat.R;
 import com.bring.dat.model.network.APIClient;
@@ -141,7 +142,7 @@ public class PrintReceipt {
 
     public static void printOrderReceipt(Context mContext, OrderDetails mOrderDetails) {
         String msg, msg2;
-        String DIVIDER = "--------------------------------";
+        //String DIVIDER = "--------------------------------";
         String DIVIDER_DOUBLE = "================================";
         String HORIZONTAL_LINE = "________________________________";
         String BREAK = "\n";
@@ -156,21 +157,21 @@ public class PrintReceipt {
         writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
 
         msg = mOrder.merchantName + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = mOrder.merchantAddress + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = mOrder.merchantPhone + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
-        msg = DIVIDER + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
+        msg = DIVIDER_DOUBLE + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         if (mOrder.deliverytype.equalsIgnoreCase("delivery")) {
-            msg = "DELIVERY" + BREAK + DIVIDER + BREAK;
+            msg = "DELIVERY" + BREAK + DIVIDER_DOUBLE + BREAK;
         } else {
-            msg = "PICKUP" + BREAK + DIVIDER + BREAK;
+            msg = "PICKUP" + BREAK + DIVIDER_DOUBLE + BREAK;
         }
         writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
 
@@ -178,13 +179,15 @@ public class PrintReceipt {
         writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         if (mOrder.deliverytime.equalsIgnoreCase("ASAP")) {
-            msg = mOrder.orderdeliverydate + BREAK + DIVIDER_DOUBLE + BREAK;
-            writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
+            msg = mOrder.orderdeliverydate + BREAK;
         } else {
             String time = "Ready By: " + Utils.parseDateToMMdd(mOrder.deliverydate) + " " + mOrder.deliverytime;
-            msg = time + BREAK + DIVIDER_DOUBLE + BREAK;
-            writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
+            msg = time + BREAK + DIVIDER_DOUBLE;
         }
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
+
+        msg = DIVIDER_DOUBLE + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = mOrder.customername + " " + mOrder.customerlastname + BREAK;
         writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
@@ -193,7 +196,7 @@ public class PrintReceipt {
         writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = mOrder.customercellphone + BREAK + DIVIDER_DOUBLE + BREAK;
-        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().get(), Formatter.centerAlign());
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
 
         msg = "Qty" + SPACE4 + "Item";
         //printLeft(msg);
@@ -220,44 +223,68 @@ public class PrintReceipt {
                 printCenter(BREAK);
             }
             if (!mCart.full.isEmpty()) {
-                StringBuilder full = new StringBuilder();
+                StringBuilder textData = new StringBuilder();
                 if (mCart.full.contains(",")) {
                     String[] split = mCart.full.split(",");
                     for (String topping : split) {
-                        full.append(topping).append(",").append("\n");
+                        textData.append(decode(topping));
+
+                        if (split[split.length - 1].equals(topping))
+                            textData.append(BREAK);
+                        else
+                            textData.append(",").append(BREAK);
+
                     }
                 }
-                msg = SPACE5 + "  " + full;
+                msg = SPACE5 + "  " + textData.toString();
                 printLeft(msg);
                 printCenter(BREAK);
             }
+
             if (!mCart.half1.isEmpty()) {
                 StringBuilder firstHalf = new StringBuilder();
                 if (mCart.half1.contains(",")) {
+                    firstHalf.append(mContext.getString(R.string.prompt_half_one)).append(" ");
+
                     String[] split = mCart.half1.split(",");
                     for (String topping : split) {
-                        firstHalf.append(topping).append(",").append("\n");
+                        firstHalf.append(decode(topping));
+
+                        if (split[split.length - 1].equals(topping))
+                            firstHalf.append(BREAK);
+                        else
+                            firstHalf.append(",").append(BREAK);
                     }
                 }
-                msg = mContext.getString(R.string.prompt_half_one) + " " + firstHalf.toString();
+                msg = firstHalf.toString();
                 printLeft(msg);
                 printCenter(BREAK);
             }
             if (!mCart.half2.isEmpty()) {
                 StringBuilder secondHalf = new StringBuilder();
                 if (mCart.half2.contains(",")) {
+                    secondHalf.append(mContext.getString(R.string.prompt_half_two)).append(" ");
+
                     String[] split = mCart.half2.split(",");
                     for (String topping : split) {
-                        secondHalf.append(topping).append(",").append("\n");
+                        secondHalf.append(decode(topping));
+
+                        if (split[split.length - 1].equals(topping))
+                            secondHalf.append(BREAK);
+                        else
+                            secondHalf.append(",").append(BREAK);
                     }
                 }
 
-                msg = mContext.getString(R.string.prompt_half_two) + " " + secondHalf.toString();
+                msg = secondHalf.toString();
                 printLeft(msg);
                 printCenter(BREAK);
             }
 
         }
+
+        msg = DIVIDER_DOUBLE + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         msg = BREAK + "Subtotal:";
         //printLeft(msg);
@@ -323,17 +350,48 @@ public class PrintReceipt {
         msg2 = SPACE5 + Constants.CURRENCY + mOrder.tipamount;
         //printRight(msg);
         printLeftRightAlign(msg, msg2);
-        printCenter(BREAK + HORIZONTAL_LINE);
+        printCenter(BREAK);
 
         msg = "Total:";
         //printLeft(msg);
 
         msg2 = SPACE5 + Constants.CURRENCY + mOrder.ordertotalprice;
-        //printRight(msg);
-        printLeftRightAlign(msg, msg2);
-        printCenter(BREAK + DIVIDER_DOUBLE);
 
-        msg = BREAK + BREAK + BREAK + mOrder.paymentType + BREAK + DIVIDER_DOUBLE + BREAK ;
+        String total = leftRightAlign(msg, msg2);
+        //printRight(msg);
+        writeWithFormat(total, total.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+        printCenter(BREAK);
+
+        msg = BREAK + BREAK + "Order Instructions: " + mOrder.instructions;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+
+        msg = BREAK + BREAK + DIVIDER_DOUBLE + BREAK;
+        writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
+
+        if (mOrder.paymentType.equals(Constants.PAYMENT_COD))
+            msg = BREAK + mOrder.paymentType + BREAK + DIVIDER_DOUBLE + BREAK;
+        else
+            msg = Constants.PAYMENT_PREPAID + BREAK + DIVIDER_DOUBLE + BREAK;
+
+        writeWithFormat(msg, msg.getBytes(), new Formatter().bold().height().get(), Formatter.centerAlign());
+
+        StringBuilder textData = new StringBuilder();
+        List<List<String>> listCard = data.ccDetails;
+        if (listCard.size() != 0) {
+            List<String> card = listCard.get(0);
+            if (card.size() > 4 && (mOrder.paymentType.equalsIgnoreCase(Constants.PAYMENT_CC))) {
+                if (!card.get(2).isEmpty() && card.get(2).contains("-")) {
+                    String[] split = TextUtils.split(card.get(2), "-");
+                    textData.append(DIVIDER_DOUBLE);
+                    textData.append("Card Number : ");
+                    textData.append("XXXX-XXXX-XXXX-").append(split[3]).append(BREAK);
+
+                    writeWithFormat(textData.toString(), textData.toString().getBytes(), new Formatter().get(), Formatter.centerAlign());
+                }
+            }
+        }
+
+        msg = BREAK + BREAK + BREAK + BREAK;
         writeWithFormat(msg, msg.getBytes(), new Formatter().get(), Formatter.centerAlign());
 
         receiptPrinted(mContext, mOrder.orderid);
@@ -350,6 +408,10 @@ public class PrintReceipt {
                 .doOnNext(orderDetails -> {})
                 .doOnError(PrintReceipt::serverError)
                 .subscribe();
+    }
+
+    private static String decode(String url) {
+        return url.replace("&amp;", "&");
     }
 
     private static void printUsingXML(Context mContext) {
@@ -455,6 +517,13 @@ public class PrintReceipt {
     }
 
 
-
+    private static String leftRightAlign(String str1, String str2) {
+        String txt = str1 + str2;
+        if (txt.length() < 31) {
+            int n = (31 - (str1.length() + str2.length()));
+            txt = str1 + new String(new char[n]).replace("\0", " ") + str2;
+        }
+        return txt;
+    }
 
 }

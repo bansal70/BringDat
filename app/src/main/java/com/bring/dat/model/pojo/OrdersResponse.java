@@ -30,6 +30,10 @@ public class OrdersResponse {
     public String codEnable;
     @SerializedName("prepaid_enable")
     public String prepaidEnable;
+    @SerializedName("restaurant_logo")
+    public String restaurantLogo;
+    @SerializedName("restaurant_name")
+    public String restaurantName;
     @SerializedName("data")
     public Data data;
 
